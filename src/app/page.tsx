@@ -1603,7 +1603,10 @@ export default function Home() {
           <div style={{ width: '60%', background: '#FFFFFF', minHeight: 400, marginLeft: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 32, maxWidth: 900 }} className="flex flex-col items-end">
             {/* Komponen tabel kurs mbarate.net */}
             <div style={{ width: '100%', marginTop: 0, padding: 0, overflow: 'hidden' }}>
-              <KursMbarateTable refreshTrigger={jenisTransaksi} />
+              <KursMbarateTable 
+                refreshTrigger={jenisTransaksi} 
+                selectedCurrency={valasRows[0]?.valas2 || ''} 
+              />
             </div>
           </div>
         </div>

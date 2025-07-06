@@ -5,9 +5,10 @@ import kursLocal from "../kurs-mbarate.json";
 
 interface KursMbarateTableProps {
   refreshTrigger?: string; // Trigger untuk refresh saat jenis transaksi berubah
+  selectedCurrency?: string; // Mata uang yang dipilih untuk sorting dan highlighting
 }
 
-export default function KursMbarateTable({ refreshTrigger }: KursMbarateTableProps) {
+export default function KursMbarateTable({ refreshTrigger, selectedCurrency }: KursMbarateTableProps) {
   const [kurs, setKurs] = useState<KursRow[]>([]);
   const [lastUpdate, setLastUpdate] = useState<string>("");
   const [fetchError, setFetchError] = useState<string>("");
@@ -312,6 +313,46 @@ export default function KursMbarateTable({ refreshTrigger }: KursMbarateTablePro
     return idxA - idxB;
   });
 
+  // --- SORTING BERDASARKAN MATA UANG YANG DIPILIH ---
+  if (selectedCurrency && selectedCurrency.trim() !== '') {
+    const selectedCurrencyUpper = selectedCurrency.toUpperCase().trim();
+    
+    // Cari baris yang cocok dengan mata uang yang dipilih
+    const matchedRows: KursRow[] = [];
+    const otherRows: KursRow[] = [];
+    
+    kursSorted.forEach(row => {
+      const kode = (row.kode || '').toUpperCase();
+      const isMatch = 
+        // Exact match dengan kode currency
+        kode === selectedCurrencyUpper ||
+        // Match dengan currency yang diikuti spasi atau ":"
+        kode.startsWith(selectedCurrencyUpper + ' ') ||
+        kode.startsWith(selectedCurrencyUpper + ':') ||
+        // Match untuk USD variants (USD New, USD 2nd, dll)
+        (selectedCurrencyUpper === 'USD' && kode.includes('USD')) ||
+        // Match untuk EURO
+        (selectedCurrencyUpper === 'EUR' && (kode.includes('EURO') || kode.includes('EUR'))) ||
+        // Match untuk YUAN/CNY
+        (selectedCurrencyUpper === 'CNY' && kode.includes('YUAN')) ||
+        // Match untuk WON/KRW  
+        (selectedCurrencyUpper === 'KRW' && kode.includes('WON')) ||
+        // Match untuk NT/TWD
+        (selectedCurrencyUpper === 'TWD' && kode.includes('NT')) ||
+        // Match untuk QTR/QAR
+        (selectedCurrencyUpper === 'QAR' && kode.includes('QTR'));
+        
+      if (isMatch) {
+        matchedRows.push(row);
+      } else {
+        otherRows.push(row);
+      }
+    });
+    
+    // Gabungkan: matched rows di atas, other rows di bawah
+    kursSorted = [...matchedRows, ...otherRows];
+  }
+
 
   // --- Penempatan khusus : 1 - 20 di bawah : 50 - 200 ---
   const idx50200 = kursSorted.findIndex(row => typeof row.kode === 'string' && row.kode.replace(/\s+/g, '') === ':50-200');
@@ -461,32 +502,97 @@ export default function KursMbarateTable({ refreshTrigger }: KursMbarateTablePro
             <tbody>
               {kursDisplay.length === 0 ? (
                 <tr><td colSpan={3} className="text-center text-gray-400 border border-black">Tidak ada data kurs</td></tr>
-              ) : kursDisplay.map((row: KursRow, idx: number) => (
-                <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                  <td
-                    className={"text-left w-3/5 border border-black"}
-                    style={{
-                      paddingLeft: (() => {
-                        const kode = String(row.kode || '').trim();
-                        if (!kode) return 42;
-                        // Special padding for NT : 100 - 200
-                        if (kode === ': 100 - 200') return 25;
-                        if (/^:\s*\d/.test(kode)) return 42;
-                        if (/^;\s*\d/.test(kode)) return 42;
-                        return 4;
-                      })()
-                    }}
-                  >
-                    {(() => {
-                      const kode = (row as any).currency || row.kode;
-                      return kode;
-                    })()}
-                  </td>
+              ) : kursDisplay.map((row: KursRow, idx: number) => {
+                // Cek apakah baris ini cocok dengan mata uang yang dipilih
+                const isSelectedCurrency = selectedCurrency && selectedCurrency.trim() !== '' ? (() => {
+                  const selectedCurrencyUpper = selectedCurrency.toUpperCase().trim();
+                  const kode = (row.kode || '').toUpperCase();
+                  
+                  return (
+                    // Exact match dengan kode currency
+                    kode === selectedCurrencyUpper ||
+                    // Match dengan currency yang diikuti spasi atau ":"
+                    kode.startsWith(selectedCurrencyUpper + ' ') ||
+                    kode.startsWith(selectedCurrencyUpper + ':') ||
+                    // Match untuk USD variants (USD New, USD 2nd, dll)
+                    (selectedCurrencyUpper === 'USD' && kode.includes('USD')) ||
+                    // Match untuk EURO
+                    (selectedCurrencyUpper === 'EUR' && (kode.includes('EURO') || kode.includes('EUR'))) ||
+                    // Match untuk YUAN/CNY
+                    (selectedCurrencyUpper === 'CNY' && kode.includes('YUAN')) ||
+                    // Match untuk WON/KRW  
+                    (selectedCurrencyUpper === 'KRW' && kode.includes('WON')) ||
+                    // Match untuk NT/TWD
+                    (selectedCurrencyUpper === 'TWD' && kode.includes('NT')) ||
+                    // Match untuk QTR/QAR
+                    (selectedCurrencyUpper === 'QAR' && kode.includes('QTR'))
+                  );
+                })() : false;
 
-                  <td className="text-center border border-black">{formatRibuan(row.buy)}</td>
-                  <td className="text-center pr-0 border border-black">{formatRibuan(row.sell)}</td>
-                </tr>
-              ))}
+                return (
+                  <tr 
+                    key={idx} 
+                    className={
+                      isSelectedCurrency 
+                        ? 'bg-red-100 border-red-300' 
+                        : (idx % 2 === 0 ? 'bg-white' : 'bg-gray-50')
+                    }
+                    style={
+                      isSelectedCurrency 
+                        ? { 
+                            backgroundColor: '#fef2f2', 
+                            borderColor: '#fca5a5',
+                            boxShadow: '0 0 0 1px #ef4444'
+                          } 
+                        : {}
+                    }
+                  >
+                    <td
+                      className={"text-left w-3/5 border border-black"}
+                      style={{
+                        paddingLeft: (() => {
+                          const kode = String(row.kode || '').trim();
+                          if (!kode) return 42;
+                          // Special padding for NT : 100 - 200
+                          if (kode === ': 100 - 200') return 25;
+                          if (/^:\s*\d/.test(kode)) return 42;
+                          if (/^;\s*\d/.test(kode)) return 42;
+                          return 4;
+                        })(),
+                        backgroundColor: isSelectedCurrency ? '#fef2f2' : 'inherit',
+                        fontWeight: isSelectedCurrency ? 'bold' : 'normal',
+                        color: isSelectedCurrency ? '#dc2626' : 'inherit'
+                      }}
+                    >
+                      {(() => {
+                        const kode = (row as any).currency || row.kode;
+                        return kode;
+                      })()}
+                    </td>
+
+                    <td 
+                      className="text-center border border-black"
+                      style={{
+                        backgroundColor: isSelectedCurrency ? '#fef2f2' : 'inherit',
+                        fontWeight: isSelectedCurrency ? 'bold' : 'normal',
+                        color: isSelectedCurrency ? '#dc2626' : 'inherit'
+                      }}
+                    >
+                      {formatRibuan(row.buy)}
+                    </td>
+                    <td 
+                      className="text-center pr-0 border border-black"
+                      style={{
+                        backgroundColor: isSelectedCurrency ? '#fef2f2' : 'inherit',
+                        fontWeight: isSelectedCurrency ? 'bold' : 'normal',
+                        color: isSelectedCurrency ? '#dc2626' : 'inherit'
+                      }}
+                    >
+                      {formatRibuan(row.sell)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
