@@ -500,7 +500,7 @@ export default function Home() {
       localStorage.setItem("lastTransactionNumber", transactionNumber);
 
       // Show success toast dengan info jumlah transaksi tersimpan
-      toast.success(`Data berhasil disimpan dengan ${savedTransactions.length} transaksi valas`)
+      // toast.success(`Data berhasil disimpan dengan ${savedTransactions.length} transaksi valas`)
 
       // Redirect to transactions page
       router.push("/transaksi")
@@ -708,7 +708,7 @@ export default function Home() {
         setValasRows(rows => rows.map((row, idx) => 
           idx === 0 ? { ...row, valas: '', valas2: valas.kode } : row
         ));
-        toast.success(`Ditemukan: ${valas.kode} - ${valas.nama}`);
+        // toast.success(`Ditemukan: ${valas.kode} - ${valas.nama}`);
         // Pindah fokus ke field Amount setelah berhasil
         setTimeout(() => {
           if (amountRef.current) {
@@ -727,7 +727,7 @@ export default function Home() {
         setValasRows(rows => rows.map((row, idx) => 
           idx === 0 ? { ...row, valas: '', valas2: valas.kode } : row
         ));
-        toast.success(`Ditemukan: ${valas.kode} - ${valas.nama}`);
+        // toast.success(`Ditemukan: ${valas.kode} - ${valas.nama}`);
         // Pindah fokus ke field Amount setelah berhasil
         setTimeout(() => {
           if (amountRef.current) {
@@ -825,7 +825,7 @@ export default function Home() {
       ));
     }
     
-    toast.success('Data berhasil ditambahkan ke tabel transaksi');
+    // toast.success('Data berhasil ditambahkan ke tabel transaksi');
     
     // Pindah fokus ke tombol Lanjut
     setTimeout(() => {
@@ -858,7 +858,7 @@ export default function Home() {
       }
     }, 100);
     
-    toast.success('Siap untuk transaksi berikutnya');
+    // toast.success('Siap untuk transaksi berikutnya');
   };
 
   // Fungsi untuk tombol Batal Ulang (hapus semua data di tabel bawah)

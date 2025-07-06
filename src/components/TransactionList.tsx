@@ -67,6 +67,7 @@ import { UserFormRight } from "./UserFormRight"
 import { UserFormNasabah } from "./UserFormNasabah"
 import { UserFormTransaksi } from "./UserFormTransaksi"
 import { ImageGallery } from "./ImageGallery"
+import { TransactionSummaryTable } from "./TransactionSummaryTable"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
 
 interface TransactionListProps {
@@ -574,6 +575,14 @@ export default function TransactionList({
                           </div>
                         )}
                       </div>
+                    )}
+                    
+                    {/* Tabel Transaksi Minimize - Hanya untuk halaman nasabah */}
+                    {backendUrl?.includes("nasabah") && selectedViewTransaction?.id && (
+                      <TransactionSummaryTable 
+                        nasabahId={selectedViewTransaction.id}
+                        backendUrl={backendUrl.replace("/api/nasabah", "")}
+                      />
                     )}
                     
                     <div className="flex justify-end gap-2">
