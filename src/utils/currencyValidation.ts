@@ -67,19 +67,15 @@ function getCurrencyRanges(kursData: KursData[], selectedCurrency: string): { bu
     return { buyRange: null, sellRange: null };
   }
 
-  // Ambil semua harga buy dan sell yang valid
+  // Ambil semua harga buy yang valid
   const buyPrices = matchedRates
     .map(rate => parseFloat(rate.buy.replace(/\./g, '').replace(/,/g, '.')))
     .filter(price => !isNaN(price) && price > 0);
     
-  const sellPrices = matchedRates
-    .map(rate => parseFloat(rate.sell.replace(/\./g, '').replace(/,/g, '.')))
-    .filter(price => !isNaN(price) && price > 0);
-
   let buyRange: ValidationRange | null = null;
   let sellRange: ValidationRange | null = null;
 
-  // Hitung range untuk buy
+  // Hitung range berdasarkan harga buy (dari terkecil sampai terbesar + tolerance)
   if (buyPrices.length > 0) {
     const minBuy = Math.min(...buyPrices);
     const maxBuy = Math.max(...buyPrices);
@@ -89,17 +85,12 @@ function getCurrencyRanges(kursData: KursData[], selectedCurrency: string): { bu
       min: minBuy - tolerance,
       max: maxBuy + tolerance
     };
-  }
-
-  // Hitung range untuk sell
-  if (sellPrices.length > 0) {
-    const minSell = Math.min(...sellPrices);
-    const maxSell = Math.max(...sellPrices);
-    const tolerance = getTolerance(maxSell);
     
+    // Untuk sell range, gunakan logika yang sama dengan buy range
+    // karena berdasarkan contoh USD: range dari buy terkecil sampai terbesar
     sellRange = {
-      min: minSell - tolerance,
-      max: maxSell + tolerance
+      min: minBuy - tolerance,
+      max: maxBuy + tolerance
     };
   }
 
@@ -117,8 +108,8 @@ export function validateCurrencyRate(
   const { buyRange, sellRange } = getCurrencyRanges(kursData, selectedCurrency);
   
   // Tentukan apakah ini buy atau sell berdasarkan jenis transaksi
-  // BNS (Beli Nota Segar) = Buy rate, JNS (Jual Nota Segar) = Sell rate
-  const isBuyTransaction = transactionType === 'BNS';
+  // BNB (Beli Nota Biasa) = Buy rate, BNS (Beli Nota Segar) = Sell rate
+  const isBuyTransaction = transactionType === 'BNB';
   const targetRange = isBuyTransaction ? buyRange : sellRange;
   
   if (!targetRange) {
