@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from "react"
 import dynamic from "next/dynamic"
 import { getValasByNumber, getValasByCode } from "@/lib/valasData"
+import RateValidationModal from "@/components/RateValidationModal"
+import { validateCurrencyRate, type CurrencyValidationResult } from "@/utils/currencyValidation"
+import kursData from "./kurs-mbarate.json"
 const KursMbarateTable = dynamic(() => import("./valas/KursMbarateTable"), { ssr: false })
 // CustomDropdownLokasi: dropdown polos tanpa highlight biru/oranye, full kontrol styling
 function CustomDropdownLokasi() {
@@ -232,6 +235,16 @@ export default function Home() {
   const [jenisTransaksi, setJenisTransaksi] = useState<string>("");
   const [pembayaranRp, setPembayaranRp] = useState<string>("");
   const [isTransactionAreaOpen, setIsTransactionAreaOpen] = useState<boolean>(false); // Kontrol akses ke area transaksi
+
+  // State untuk modal validasi kurs
+  const [showValidationModal, setShowValidationModal] = useState<boolean>(false);
+  const [validationData, setValidationData] = useState<{
+    currency: string;
+    enteredRate: number;
+    validRange: { min: number; max: number };
+    rateType: 'buy' | 'sell';
+    onConfirm: () => void;
+  } | null>(null);
 
   // State untuk mode edit baris tabel
   const [editingRowIndex, setEditingRowIndex] = useState<number | null>(null);
@@ -750,6 +763,40 @@ export default function Home() {
       toast.error('Masukkan rate yang valid');
       return;
     }
+
+    // Validasi kurs berdasarkan mata uang dan jenis transaksi
+    const enteredRate = parseFloat(currentRow.rate);
+    const validation = validateCurrencyRate(
+      kursData,
+      currentRow.valas2,
+      enteredRate,
+      jenisTransaksi
+    );
+
+    // Jika rate tidak valid, tampilkan modal peringatan
+    if (!validation.isValid) {
+      setValidationData({
+        currency: currentRow.valas2,
+        enteredRate: enteredRate,
+        validRange: validation.validRange,
+        rateType: validation.rateType,
+        onConfirm: () => {
+          // Jika user konfirmasi, lanjutkan proses
+          proceedWithAddingToTable();
+          setShowValidationModal(false);
+        }
+      });
+      setShowValidationModal(true);
+      return;
+    }
+
+    // Jika rate valid, langsung lanjutkan
+    proceedWithAddingToTable();
+  };
+
+  // Fungsi untuk melanjutkan proses menambah data ke tabel
+  const proceedWithAddingToTable = () => {
+    const currentRow = valasRows[0];
     
     // Cari index baris kosong pertama di tabel bawah (mulai dari index 1)
     let emptyIndex = valasRows.findIndex((row, idx) => idx > 0 && (!row.valas || row.valas.trim() === ''));
@@ -1683,6 +1730,19 @@ export default function Home() {
     padding: inherit !important;
   }
 `}</style>
+
+        {/* Modal Validasi Kurs */}
+        {showValidationModal && validationData && (
+          <RateValidationModal
+            isOpen={showValidationModal}
+            onConfirm={validationData.onConfirm}
+            onCancel={() => setShowValidationModal(false)}
+            currency={validationData.currency}
+            enteredRate={validationData.enteredRate}
+            validRange={validationData.validRange}
+            rateType={validationData.rateType}
+          />
+        )}
       </div>
     </main>
   )
