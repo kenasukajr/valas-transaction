@@ -1033,8 +1033,8 @@ export default function Home() {
           {/* Hapus tombol pilih jenis transaksi BNB/BNS di sini, karena sudah ada di UserForm */}
         </div>
 
-        {/* Main Content - 2 Column Layout */}
-        <div className="flex-1 grid grid-cols-2 gap-8 overflow-hidden">
+        {/* Main Content - Responsive Layout */}
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 overflow-hidden">
           {/* Left Column - Form Part 1 */}
           <div>
             <Card className="w-full h-full">

@@ -421,7 +421,8 @@ export default function TransactionList({
           Hapus Terpilih
         </button>
       </div>
-      <table className="min-w-full border-collapse border border-gray-300 text-sm">
+      <div className="overflow-x-auto">
+        <table className="min-w-full border-collapse border border-gray-300 text-sm">
         <thead className="bg-blue-600 text-white">
           <tr>
             <th className="border border-gray-300 px-2 py-1 text-center">
@@ -505,7 +506,7 @@ export default function TransactionList({
                   Lihat
                 </button>
                 <Dialog open={isViewModalOpen && selectedViewTransaction?.id === tx.id} onOpenChange={setIsViewModalOpen}>
-                <DialogContent className="w-full bg-white" style={{ width: '1400px', maxWidth: '1400px' }} aria-describedby="dialog-desc-view">
+                <DialogContent className="w-full bg-white max-w-[95vw] max-h-[95vh] overflow-y-auto sm:max-w-[1200px] md:max-w-[1400px]" aria-describedby="dialog-desc-view">
                   <DialogHeader>
                     <DialogTitle className="block pl-5 m-0">Lihat Data</DialogTitle>
                   </DialogHeader>
@@ -525,16 +526,17 @@ export default function TransactionList({
                     {relatedTransactions.length > 0 && relatedTransactions.some(t => t.currency) && (
                       <div className="mt-6">
                         <h3 className="text-lg font-semibold mb-4">Detail Transaksi Valas</h3>
-                        <table className="min-w-full border-collapse border border-gray-300 text-sm">
-                          <thead className="bg-blue-600 text-white">
-                            <tr>
-                              <th className="border border-gray-300 px-2 py-1 text-center">No</th>
-                              <th className="border border-gray-300 px-2 py-1 text-center">Currency</th>
-                              <th className="border border-gray-300 px-2 py-1 text-center">Amount</th>
-                              <th className="border border-gray-300 px-2 py-1 text-center">Rate</th>
-                              <th className="border border-gray-300 px-2 py-1 text-center">Jumlah Rupiah</th>
-                            </tr>
-                          </thead>
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full border-collapse border border-gray-300 text-sm">
+                            <thead className="bg-blue-600 text-white">
+                              <tr>
+                                <th className="border border-gray-300 px-2 py-1 text-center">No</th>
+                                <th className="border border-gray-300 px-2 py-1 text-center">Currency</th>
+                                <th className="border border-gray-300 px-2 py-1 text-center">Amount</th>
+                                <th className="border border-gray-300 px-2 py-1 text-center">Rate</th>
+                                <th className="border border-gray-300 px-2 py-1 text-center">Jumlah Rupiah</th>
+                              </tr>
+                            </thead>
                           <tbody>
                             {relatedTransactions
                               .filter(t => t.currency)  // Hanya tampilkan yang memiliki data valas
@@ -550,6 +552,7 @@ export default function TransactionList({
                             ))}
                           </tbody>
                         </table>
+                        </div>
                         {relatedTransactions.length > 1 && relatedTransactions[0]?.totalRupiah && (
                           <div className="mt-4 text-right">
                             <p className="text-lg font-semibold">
@@ -571,7 +574,7 @@ export default function TransactionList({
                   </DialogContent>
                 </Dialog>
                 <Dialog open={isEditModalOpen && selectedEditTransaction?.id === tx.id} onOpenChange={setIsEditModalOpen}>
-                <DialogContent className="w-full bg-white" style={{ width: '1400px', maxWidth: '1400px' }} aria-describedby="dialog-desc-edit">
+                <DialogContent className="w-full bg-white max-w-[95vw] max-h-[95vh] overflow-y-auto sm:max-w-[1200px] md:max-w-[1400px]" aria-describedby="dialog-desc-edit">
                   <DialogHeader>
                     <DialogTitle className="block pl-5 m-0">Ubah Data</DialogTitle>
                   </DialogHeader>
@@ -625,6 +628,7 @@ export default function TransactionList({
           ))}
         </tbody>
       </table>
+      </div>
 
       {/* Password Dialog */}
       <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
