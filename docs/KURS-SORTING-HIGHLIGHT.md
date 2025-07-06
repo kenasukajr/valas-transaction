@@ -1,6 +1,11 @@
 # 🎯 Fitur Sorting & Highlighting Tabel Kurs Berdasarkan Mata Uang Yang Dipilih
 
-## 📋 **Deskripsi Fitur**
+## 📋 **Deskripsi Fit1. **🎯 Real-time**: Update otomatis setiap kali mata uang dipilih
+2. **👀 Visual Clear**: Mata uang yang dipilih mudah dilihat dengan border neon merah
+3. **📋 Organized**: Mata uang yang dipilih selalu di atas untuk akses cepat
+4. **🔄 Non-Disruptive**: Tidak mengganggu fungsi lain, hanya menambah UX
+5. **🛡️ Robust**: Mendukung berbagai format dan alias mata uang
+6. **📝 Text Clarity**: Teks tetap hitam untuk keterbacaan optimal
 
 Fitur ini secara otomatis mengurutkan dan memberikan highlight merah pada tabel kurs berdasarkan mata uang yang dipilih dalam transaksi valas.
 
@@ -11,10 +16,11 @@ Fitur ini secara otomatis mengurutkan dan memberikan highlight merah pada tabel 
 - Tabel kurs otomatis mengurutkan mata uang yang dipilih ke **bagian paling atas**
 - Mata uang lainnya tetap mengikuti urutan default di bawahnya
 
-### 🎨 **Highlighting Merah**
-- Baris mata uang yang dipilih diberi **background merah muda** (`#fef2f2`)
-- **Text bold dan berwarna merah** (`#dc2626`)
-- **Border shadow merah** untuk emphasis ekstra
+### 🎨 **Border Neon Highlighting**
+- Baris mata uang yang dipilih diberi **border neon merah** (`#ff0040`)
+- **Text tetap hitam** (tidak berubah warna)
+- **Box shadow neon effect** untuk emphasis visual yang kuat
+- **Hanya border luar** yang diberi highlight jika ada multiple baris mata uang yang sama
 
 ## 🛠 **Implementasi Teknis**
 
@@ -52,37 +58,37 @@ Sistem matching mendukung berbagai format mata uang:
 3. Klik tombol "Cek"
 4. **Expected Result**: 
    - Semua baris USD (USD New, USD 2nd, dll) muncul di **paling atas tabel kurs**
-   - Baris USD diberi **highlight merah**
+   - Baris USD diberi **border neon merah** (teks tetap hitam)
 
 ### ✅ **Test Scenario 2: JPY**
 1. Masukkan code `6` (JPY)
 2. Klik tombol "Cek"
 3. **Expected Result**:
    - Baris JPY muncul di **paling atas**
-   - Highlight merah pada baris JPY
+   - Border neon merah pada baris JPY (teks tetap hitam)
 
 ### ✅ **Test Scenario 3: EUR**
 1. Masukkan code `2` (EUR)
 2. Klik tombol "Cek"
 3. **Expected Result**:
    - Baris EURO muncul di **paling atas**
-   - Highlight merah pada baris EURO
+   - Border neon merah pada baris EURO (teks tetap hitam)
 
 ## 🎨 **Visual Styling**
 
-### 🔴 **Highlighted Row Styles:**
+### 🔴 **Neon Border Styles:**
 ```css
-background-color: #fef2f2;    /* Light red background */
-color: #dc2626;               /* Dark red text */
-font-weight: bold;            /* Bold text */
-box-shadow: 0 0 0 1px #ef4444; /* Red border shadow */
+border: 3px solid #ff0040;           /* Neon red border */
+box-shadow: 0 0 8px rgba(255, 0, 64, 0.5), inset 0 0 8px rgba(255, 0, 64, 0.1); /* Neon glow effect */
+color: inherit;                      /* Text tetap hitam */
+font-weight: normal;                 /* Text weight normal */
 ```
 
 ### ⚪ **Normal Row Styles:**
 ```css
-background-color: white | #f9fafb; /* Alternating white/gray */
-color: inherit;                     /* Default text color */
-font-weight: normal;               /* Normal text weight */
+border: 1px solid black;             /* Normal black border */
+background-color: white | #f9fafb;   /* Alternating white/gray */
+color: inherit;                      /* Default text color */
 ```
 
 ## 🔧 **Konfigurasi**
@@ -102,10 +108,11 @@ Sorting Logic → Highlighting Logic → Render
 ## 🚀 **Keunggulan**
 
 1. **🎯 Real-time**: Update otomatis setiap kali mata uang dipilih
-2. **🔍 Visual Clear**: Mata uang yang dipilih mudah dilihat dengan highlight merah
+2. **� Visual Clear**: Mata uang yang dipilih mudah dilihat dengan border neon merah
 3. **📋 Organized**: Mata uang yang dipilih selalu di atas untuk akses cepat
-4. **🔄 Responsive**: Tidak mengganggu fungsi lain, hanya menambah UX
+4. **🔄 Non-Disruptive**: Tidak mengganggu fungsi lain, hanya menambah UX
 5. **🛡️ Robust**: Mendukung berbagai format dan alias mata uang
+6. **📝 Text Clarity**: Teks tetap hitam untuk keterbacaan optimal
 
 ## 🔮 **Future Enhancement Ideas**
 

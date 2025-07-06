@@ -529,23 +529,57 @@ export default function KursMbarateTable({ refreshTrigger, selectedCurrency }: K
                   );
                 })() : false;
 
+                // Cek apakah ini baris pertama atau terakhir dari grup mata uang yang dipilih
+                const isFirstSelectedRow = isSelectedCurrency && (idx === 0 || !kursDisplay[idx - 1] || (() => {
+                  if (!selectedCurrency) return true;
+                  const selectedCurrencyUpper = selectedCurrency.toUpperCase().trim();
+                  const prevKode = (kursDisplay[idx - 1].kode || '').toUpperCase();
+                  
+                  return !(
+                    prevKode === selectedCurrencyUpper ||
+                    prevKode.startsWith(selectedCurrencyUpper + ' ') ||
+                    prevKode.startsWith(selectedCurrencyUpper + ':') ||
+                    (selectedCurrencyUpper === 'USD' && prevKode.includes('USD')) ||
+                    (selectedCurrencyUpper === 'EUR' && (prevKode.includes('EURO') || prevKode.includes('EUR'))) ||
+                    (selectedCurrencyUpper === 'CNY' && prevKode.includes('YUAN')) ||
+                    (selectedCurrencyUpper === 'KRW' && prevKode.includes('WON')) ||
+                    (selectedCurrencyUpper === 'TWD' && prevKode.includes('NT')) ||
+                    (selectedCurrencyUpper === 'QAR' && prevKode.includes('QTR'))
+                  );
+                })());
+
+                const isLastSelectedRow = isSelectedCurrency && (idx === kursDisplay.length - 1 || !kursDisplay[idx + 1] || (() => {
+                  if (!selectedCurrency) return true;
+                  const selectedCurrencyUpper = selectedCurrency.toUpperCase().trim();
+                  const nextKode = (kursDisplay[idx + 1].kode || '').toUpperCase();
+                  
+                  return !(
+                    nextKode === selectedCurrencyUpper ||
+                    nextKode.startsWith(selectedCurrencyUpper + ' ') ||
+                    nextKode.startsWith(selectedCurrencyUpper + ':') ||
+                    (selectedCurrencyUpper === 'USD' && nextKode.includes('USD')) ||
+                    (selectedCurrencyUpper === 'EUR' && (nextKode.includes('EURO') || nextKode.includes('EUR'))) ||
+                    (selectedCurrencyUpper === 'CNY' && nextKode.includes('YUAN')) ||
+                    (selectedCurrencyUpper === 'KRW' && nextKode.includes('WON')) ||
+                    (selectedCurrencyUpper === 'TWD' && nextKode.includes('NT')) ||
+                    (selectedCurrencyUpper === 'QAR' && nextKode.includes('QTR'))
+                  );
+                })());
+
+                // Style untuk border neon merah
+                const borderStyle = isSelectedCurrency ? {
+                  borderTop: isFirstSelectedRow ? '3px solid #ff0040' : '1px solid #black',
+                  borderBottom: isLastSelectedRow ? '3px solid #ff0040' : '1px solid #black',
+                  borderLeft: '3px solid #ff0040',
+                  borderRight: '3px solid #ff0040',
+                  boxShadow: '0 0 8px rgba(255, 0, 64, 0.5), inset 0 0 8px rgba(255, 0, 64, 0.1)',
+                } : {};
+
                 return (
                   <tr 
                     key={idx} 
-                    className={
-                      isSelectedCurrency 
-                        ? 'bg-red-100 border-red-300' 
-                        : (idx % 2 === 0 ? 'bg-white' : 'bg-gray-50')
-                    }
-                    style={
-                      isSelectedCurrency 
-                        ? { 
-                            backgroundColor: '#fef2f2', 
-                            borderColor: '#fca5a5',
-                            boxShadow: '0 0 0 1px #ef4444'
-                          } 
-                        : {}
-                    }
+                    className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                    style={borderStyle}
                   >
                     <td
                       className={"text-left w-3/5 border border-black"}
@@ -559,9 +593,10 @@ export default function KursMbarateTable({ refreshTrigger, selectedCurrency }: K
                           if (/^;\s*\d/.test(kode)) return 42;
                           return 4;
                         })(),
-                        backgroundColor: isSelectedCurrency ? '#fef2f2' : 'inherit',
-                        fontWeight: isSelectedCurrency ? 'bold' : 'normal',
-                        color: isSelectedCurrency ? '#dc2626' : 'inherit'
+                        borderLeft: isSelectedCurrency ? 'none' : '1px solid black',
+                        borderRight: isSelectedCurrency ? 'none' : '1px solid black',
+                        borderTop: isSelectedCurrency ? 'none' : '1px solid black',
+                        borderBottom: isSelectedCurrency ? 'none' : '1px solid black'
                       }}
                     >
                       {(() => {
@@ -573,9 +608,10 @@ export default function KursMbarateTable({ refreshTrigger, selectedCurrency }: K
                     <td 
                       className="text-center border border-black"
                       style={{
-                        backgroundColor: isSelectedCurrency ? '#fef2f2' : 'inherit',
-                        fontWeight: isSelectedCurrency ? 'bold' : 'normal',
-                        color: isSelectedCurrency ? '#dc2626' : 'inherit'
+                        borderLeft: isSelectedCurrency ? 'none' : '1px solid black',
+                        borderRight: isSelectedCurrency ? 'none' : '1px solid black',
+                        borderTop: isSelectedCurrency ? 'none' : '1px solid black',
+                        borderBottom: isSelectedCurrency ? 'none' : '1px solid black'
                       }}
                     >
                       {formatRibuan(row.buy)}
@@ -583,9 +619,10 @@ export default function KursMbarateTable({ refreshTrigger, selectedCurrency }: K
                     <td 
                       className="text-center pr-0 border border-black"
                       style={{
-                        backgroundColor: isSelectedCurrency ? '#fef2f2' : 'inherit',
-                        fontWeight: isSelectedCurrency ? 'bold' : 'normal',
-                        color: isSelectedCurrency ? '#dc2626' : 'inherit'
+                        borderLeft: isSelectedCurrency ? 'none' : '1px solid black',
+                        borderRight: isSelectedCurrency ? 'none' : '1px solid black',
+                        borderTop: isSelectedCurrency ? 'none' : '1px solid black',
+                        borderBottom: isSelectedCurrency ? 'none' : '1px solid black'
                       }}
                     >
                       {formatRibuan(row.sell)}
