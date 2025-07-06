@@ -169,22 +169,11 @@ namespace ServerManager
             return "localhost";
         }
 
-        // Fungsi dialog pemilihan IP sederhana
+        // Fungsi dialog pemilihan IP sederhana - menggunakan WPF
         private string ShowIpSelectionDialog(List<string> ipList)
         {
-            string selectedIp = ipList[0];
-            string message = "Pilih IP LAN yang akan digunakan untuk backend/frontend:\n\n";
-            for (int i = 0; i < ipList.Count; i++)
-            {
-                message += $"[{i + 1}] {ipList[i]}\n";
-            }
-            message += "\nMasukkan nomor IP yang dipilih (1 - " + ipList.Count + "):";
-            string input = Microsoft.VisualBasic.Interaction.InputBox(message, "Pilih IP LAN", "1");
-            if (int.TryParse(input, out int idx) && idx >= 1 && idx <= ipList.Count)
-            {
-                selectedIp = ipList[idx - 1];
-            }
-            return selectedIp;
+            // Gunakan implementasi WPF yang sudah ada
+            return ShowIpSelectionDialogWpf(ipList);
         }
 
         private void StartBackend()
@@ -195,7 +184,7 @@ namespace ServerManager
                 return;
             }
 
-            // Ambil root project dari empat level di atas folder EXE
+            // Ambil root project dari lima level di atas folder EXE
             var exeDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             if (exeDir == null)
             {
@@ -203,7 +192,7 @@ namespace ServerManager
                 SetBackendStatus(false);
                 return;
             }
-            var projectRoot = System.IO.Path.GetFullPath(System.IO.Path.Combine(exeDir, "..", "..", "..", ".."));
+            var projectRoot = System.IO.Path.GetFullPath(System.IO.Path.Combine(exeDir, "..", "..", "..", "..", ".."));
             var backendDir = System.IO.Path.Combine(projectRoot, "backend");
             Log($"Resolved backend working directory: {backendDir}");
             if (!System.IO.Directory.Exists(backendDir))
@@ -365,7 +354,7 @@ namespace ServerManager
                 SetFrontendStatus(false);
                 return;
             }
-            var projectRoot = System.IO.Path.GetFullPath(System.IO.Path.Combine(exeDir, "..", "..", "..", ".."));
+            var projectRoot = System.IO.Path.GetFullPath(System.IO.Path.Combine(exeDir, "..", "..", "..", "..", ".."));
             var envPath = System.IO.Path.Combine(projectRoot, ".env.local");
             try
             {

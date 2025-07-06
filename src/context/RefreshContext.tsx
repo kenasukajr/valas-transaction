@@ -1,7 +1,5 @@
 "use client"
 
-"use client"
-
 import React, { createContext, useState, ReactNode, useContext } from "react";
 
 interface RefreshContextType {

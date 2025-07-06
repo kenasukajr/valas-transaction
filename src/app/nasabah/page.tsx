@@ -35,15 +35,13 @@ export default function NasabahPage() {
       <div className="px-[10px] py-8 w-full">
         <TransactionList 
           refreshFlag={refreshFlag} 
-          toggleRefresh={toggleRefresh}
-          showDeleteButtons={true} 
+          backendUrl="/api/nasabah"
+          showValasColumns={false}
+          showDeleteButtons={false}
           showEditButtons={true}
-          backendUrl={`${BACKEND_URL}/api/nasabah`} 
-          showRowNumber={true} 
-          showTransactionType={false}
           showDateColumn={false}
           showTimeColumn={false}
-          showValasColumns={false}
+          showTransactionNumber={false}
         />
       </div>
     </main>

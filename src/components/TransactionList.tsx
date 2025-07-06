@@ -103,9 +103,13 @@ export default function TransactionList({
   // Jika backendUrl prop tidak diberikan, gunakan BACKEND_URL + /api/transactions
   const effectiveBackendUrl = backendUrl || (BACKEND_URL ? `${BACKEND_URL}/api/transactions` : undefined);
 
+  console.log('TransactionList props:', { backendUrl, BACKEND_URL, effectiveBackendUrl }); // Debug log
+
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  
+  console.log('TransactionList state initialized, loading:', loading, 'error:', error); // Debug log
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const [passwordInput, setPasswordInput] = useState<string>("")
   const [passwordError, setPasswordError] = useState<string>("")
@@ -130,9 +134,10 @@ export default function TransactionList({
     }
     try {
       const url = effectiveBackendUrl;
+      console.log('Fetching from URL:', url); // Debug log
       const res = await fetch(url)
       if (!res.ok) {
-        throw new Error("Failed to fetch data")
+        throw new Error(`Failed to fetch data: ${res.status} ${res.statusText}`)
       }
       let data: Transaction[] = await res.json()
       // Tambahkan id unik jika tidak ada (untuk data nasabah)
@@ -150,13 +155,21 @@ export default function TransactionList({
       }
       setTransactions(data)
     } catch (err) {
-      setError((err as Error).message)
+      console.error('Fetch error:', err); // Debug log
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError("Tidak dapat terhubung ke server. Pastikan backend server berjalan di " + effectiveBackendUrl);
+      } else {
+        setError((err as Error).message);
+      }
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
+    console.log('=== USEEFFECT START ==='); // Debug log
+    console.log('TransactionList useEffect triggered, refreshFlag:', refreshFlag); // Debug log
+    console.log('effectiveBackendUrl:', effectiveBackendUrl); // Debug log
     fetchTransactions()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshFlag])
