@@ -1,4 +1,4 @@
-# 💱 Sistem Transaksi Valas Blackbox v1.4.1
+# 💱 Sistem Transaksi Valas v1.4.1
 
 Aplikasi manajemen transaksi valuta asing (valas) yang komprehensif dengan sistem validasi kurs otomatis dan manajemen data nasabah.
 
