@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface RateValidationModalProps {
   isOpen: boolean;
@@ -23,9 +24,15 @@ export default function RateValidationModal({
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (isOpen && cancelButtonRef.current) {
+    if (isOpen) {
       // Focus pada tombol "Tidak" saat modal terbuka
-      cancelButtonRef.current.focus();
+      const timer = setTimeout(() => {
+        if (cancelButtonRef.current) {
+          cancelButtonRef.current.focus();
+        }
+      }, 150); // Increased delay untuk memastikan dialog sudah ter-render
+      
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
@@ -51,64 +58,53 @@ export default function RateValidationModal({
     }
   };
 
-  if (!isOpen) return null;
+  const formatNumber = (num: number): string => {
+    return num.toLocaleString('id-ID', { maximumFractionDigits: 2 });
+  };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      onKeyDown={handleKeyDown}
-    >
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl border-2 border-red-300">
-        <div className="flex items-center mb-4">
-          <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-3">
-            <span className="text-red-600 font-bold text-lg">⚠</span>
+    <Dialog open={isOpen} onOpenChange={onCancel}>
+      <DialogContent className="sm:max-w-[500px] bg-gradient-to-br from-blue-50 to-white border-l-4 border-l-blue-500" aria-describedby="dialog-desc-rate-validation" onKeyDown={handleKeyDown}>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-3 text-gray-800">
+            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-sm">⚠</span>
+            </div>
+            Peringatan Rate
+          </DialogTitle>
+        </DialogHeader>
+        <p id="dialog-desc-rate-validation" className="sr-only">Peringatan rate diluar batas normal.</p>
+        <div className="py-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p className="text-gray-800 mb-2">
+              Rate yang Anda masukkan untuk <strong className="text-gray-900">{currency}</strong> adalah <strong className="text-gray-900">{formatNumber(enteredRate)}</strong>
+            </p>
+            <p className="text-gray-800 mb-2">
+              Rate ini berada di luar batas normal: <strong className="text-gray-900">{formatNumber(validRange.min)} - {formatNumber(validRange.max)}</strong>
+            </p>
           </div>
-          <h3 className="text-lg font-bold text-red-700">Peringatan Kurs</h3>
-        </div>
-        
-        <div className="mb-6">
-          <p className="text-gray-800 mb-3 font-semibold">
-            Silahkan cek kembali kurs Anda, apakah Anda yakin ingin lanjut?
+          <p className="text-gray-700 font-medium">
+            Apakah Anda yakin ingin melanjutkan?
           </p>
-          
-          <div className="bg-gray-50 p-3 rounded border">
-            <div className="text-sm text-gray-600 mb-2">
-              <strong>Mata Uang:</strong> {currency}
-            </div>
-            <div className="text-sm text-gray-600 mb-2">
-              <strong>Rate yang dimasukkan:</strong> {enteredRate.toLocaleString('id-ID')}
-            </div>
-            <div className="text-sm text-gray-600 mb-2">
-              <strong>Range valid ({rateType}):</strong> {validRange.min.toLocaleString('id-ID')} - {validRange.max.toLocaleString('id-ID')}
-            </div>
-            <div className="text-sm text-red-600 font-semibold">
-              Rate di luar range normal untuk {currency}
-            </div>
-          </div>
         </div>
-
-        <div className="flex justify-end space-x-3">
-          <button
-            ref={cancelButtonRef}
-            onClick={onCancel}
-            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 focus:ring-2 focus:ring-gray-300 focus:outline-none font-semibold"
-            autoFocus
-          >
-            Tidak
-          </button>
+        <div className="flex justify-end gap-3">
           <button
             ref={confirmButtonRef}
             onClick={onConfirm}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:ring-2 focus:ring-red-300 focus:outline-none font-semibold"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition-all duration-200 hover:shadow-lg"
           >
-            Ya, Lanjut
+            Ya
+          </button>
+          <button
+            ref={cancelButtonRef}
+            onClick={onCancel}
+            autoFocus
+            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition-all duration-200 hover:shadow-lg"
+          >
+            Tidak
           </button>
         </div>
-
-        <div className="mt-3 text-xs text-gray-500 text-center">
-          Gunakan ← → untuk pindah tombol, Enter untuk pilih, Esc untuk batal
-        </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

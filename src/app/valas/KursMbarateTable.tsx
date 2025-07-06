@@ -492,7 +492,7 @@ export default function KursMbarateTable({ refreshTrigger, selectedCurrency }: K
               <col style={{width: '20%'}} />
               <col style={{width: '20%'}} />
             </colgroup>
-            <thead style={{position: 'sticky', top: 0, zIndex: 100, background: '#2563eb', boxShadow: '0 -4px 0 0 #2563eb'}}>
+            <thead style={{position: 'sticky', top: 0, zIndex: 40, background: '#2563eb', boxShadow: '0 -4px 0 0 #2563eb'}}>
               <tr>
                 <th className="text-left pl-2 w-3/5 border border-black text-white" style={{background: '#2563eb'}}>Currency</th>
                 <th className="text-center border border-black text-white" style={{background: '#2563eb'}}>Buy</th>

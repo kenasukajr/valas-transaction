@@ -89,7 +89,7 @@ function CustomDropdownLokasi() {
             borderRadius: 6,
             margin: 0,
             padding: 0,
-            zIndex: 100,
+            zIndex: 40,
             boxShadow: "none",
             listStyle: "none",
             maxHeight: 150,
@@ -1736,7 +1736,16 @@ export default function Home() {
           <RateValidationModal
             isOpen={showValidationModal}
             onConfirm={validationData.onConfirm}
-            onCancel={() => setShowValidationModal(false)}
+            onCancel={() => {
+              setShowValidationModal(false);
+              // Kembalikan fokus ke field rate setelah modal ditutup
+              setTimeout(() => {
+                if (rateRef.current) {
+                  rateRef.current.focus();
+                  rateRef.current.select(); // Select all text untuk kemudahan edit
+                }
+              }, 100);
+            }}
             currency={validationData.currency}
             enteredRate={validationData.enteredRate}
             validRange={validationData.validRange}

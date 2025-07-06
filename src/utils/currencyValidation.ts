@@ -21,7 +21,7 @@ function getTolerance(price: number): number {
     // Harga puluhan ribu (USD, EURO, dll): ±100
     return 100;
   } else if (price >= 100) {
-    // Harga ratusan (THB, dll): ±50
+    // Harga ratusan (THB 480, dll): ±50
     return 50;
   } else if (price >= 1) {
     // Harga satuan (VND, dll): ±0.10
@@ -87,7 +87,8 @@ function getCurrencyRanges(kursData: KursData[], selectedCurrency: string): { bu
     };
     
     // Untuk sell range, gunakan logika yang sama dengan buy range
-    // karena berdasarkan contoh USD: range dari buy terkecil sampai terbesar
+    // Berdasarkan requirement: range selalu menggunakan min/max buy price
+    // Contoh USD: buy 15250-16050, range 15150-16150 untuk semua transaksi
     sellRange = {
       min: minBuy - tolerance,
       max: maxBuy + tolerance
@@ -109,8 +110,9 @@ export function validateCurrencyRate(
   
   // Tentukan apakah ini buy atau sell berdasarkan jenis transaksi
   // BNB (Beli Nota Biasa) = Buy rate, BNS (Beli Nota Segar) = Sell rate
+  // Tetapi untuk range calculation, selalu gunakan buyRange untuk semua mata uang
   const isBuyTransaction = transactionType === 'BNB';
-  const targetRange = isBuyTransaction ? buyRange : sellRange;
+  const targetRange = buyRange; // Selalu gunakan buy range seperti contoh USD
   
   if (!targetRange) {
     // Jika tidak ada data kurs, anggap valid
