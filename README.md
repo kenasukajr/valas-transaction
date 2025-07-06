@@ -1,6 +1,24 @@
-# 💱 Sistem Transaksi Valas v1.4.1
+# 💱 Blackbox Valas App v1.4.2
 
-Aplikasi manajemen transaksi valuta asing (valas) yang komprehensif dengan sistem validasi kurs otomatis dan manajemen data nasabah.
+![Version](https://img.shields.io/badge/version-1.4.2-blue.svg)
+![Status](https://img.shields.io/badge/status-production%20ready-green.svg)
+![Network](https://img.shields.io/badge/network-LAN%20ready-orange.svg)
+
+Aplikasi manajemen transaksi valuta asing (valas) yang komprehensif dengan sistem validasi kurs otomatis, manajemen data nasabah, dan akses jaringan penuh.
+
+## 🎉 What's New in v1.4.2
+
+### ✅ **Production Ready**
+- **Fixed Loading Timeout**: Mengatasi masalah "Loading timeout" dengan Next.js proxy
+- **Full Network Access**: Dapat diakses dari semua komputer dalam jaringan LAN
+- **Modern Transaction Display**: Tampilan transaksi dengan card design yang modern
+- **Zero Timeout Issues**: Sistem fetch natural tanpa kompleksitas timeout artificial
+
+### 🌐 **Network Configuration**
+- **Frontend**: `http://192.168.1.6:8000` 
+- **Backend**: `http://192.168.1.6:5000`
+- **CORS Solved**: Next.js proxy mengatasi masalah cross-origin requests
+- **Multi-Device**: Akses simultan dari multiple komputer
 
 ## 🌟 Fitur Utama
 

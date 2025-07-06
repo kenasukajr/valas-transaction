@@ -1,6 +1,6 @@
 {
-  "name": "my-app",
-  "version": "0.1.0",
+  "name": "blackbox-valas-app",
+  "version": "1.4.2",
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 8000",
