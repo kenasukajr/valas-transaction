@@ -566,20 +566,19 @@ export default function KursMbarateTable({ refreshTrigger, selectedCurrency }: K
                   );
                 })());
 
-                // Style untuk border neon merah
-                const borderStyle = isSelectedCurrency ? {
-                  borderTop: isFirstSelectedRow ? '3px solid #ff0040' : '1px solid #black',
-                  borderBottom: isLastSelectedRow ? '3px solid #ff0040' : '1px solid #black',
-                  borderLeft: '3px solid #ff0040',
-                  borderRight: '3px solid #ff0040',
-                  boxShadow: '0 0 8px rgba(255, 0, 64, 0.5), inset 0 0 8px rgba(255, 0, 64, 0.1)',
-                } : {};
-
                 return (
                   <tr 
                     key={idx} 
                     className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                    style={borderStyle}
+                    style={{
+                      ...(isSelectedCurrency && {
+                        borderTop: isFirstSelectedRow ? '3px solid #ff0040' : 'none',
+                        borderBottom: isLastSelectedRow ? '3px solid #ff0040' : 'none',
+                        borderLeft: '3px solid #ff0040',
+                        borderRight: '3px solid #ff0040',
+                        boxShadow: '0 0 8px rgba(255, 0, 64, 0.5)',
+                      })
+                    }}
                   >
                     <td
                       className={"text-left w-3/5 border border-black"}
@@ -593,10 +592,11 @@ export default function KursMbarateTable({ refreshTrigger, selectedCurrency }: K
                           if (/^;\s*\d/.test(kode)) return 42;
                           return 4;
                         })(),
-                        borderLeft: isSelectedCurrency ? 'none' : '1px solid black',
-                        borderRight: isSelectedCurrency ? 'none' : '1px solid black',
-                        borderTop: isSelectedCurrency ? 'none' : '1px solid black',
-                        borderBottom: isSelectedCurrency ? 'none' : '1px solid black'
+                        ...(isSelectedCurrency && {
+                          borderLeft: 'none',
+                          borderTop: isFirstSelectedRow ? 'none' : '1px solid black',
+                          borderBottom: isLastSelectedRow ? 'none' : '1px solid black',
+                        })
                       }}
                     >
                       {(() => {
@@ -608,10 +608,10 @@ export default function KursMbarateTable({ refreshTrigger, selectedCurrency }: K
                     <td 
                       className="text-center border border-black"
                       style={{
-                        borderLeft: isSelectedCurrency ? 'none' : '1px solid black',
-                        borderRight: isSelectedCurrency ? 'none' : '1px solid black',
-                        borderTop: isSelectedCurrency ? 'none' : '1px solid black',
-                        borderBottom: isSelectedCurrency ? 'none' : '1px solid black'
+                        ...(isSelectedCurrency && {
+                          borderTop: isFirstSelectedRow ? 'none' : '1px solid black',
+                          borderBottom: isLastSelectedRow ? 'none' : '1px solid black',
+                        })
                       }}
                     >
                       {formatRibuan(row.buy)}
@@ -619,10 +619,11 @@ export default function KursMbarateTable({ refreshTrigger, selectedCurrency }: K
                     <td 
                       className="text-center pr-0 border border-black"
                       style={{
-                        borderLeft: isSelectedCurrency ? 'none' : '1px solid black',
-                        borderRight: isSelectedCurrency ? 'none' : '1px solid black',
-                        borderTop: isSelectedCurrency ? 'none' : '1px solid black',
-                        borderBottom: isSelectedCurrency ? 'none' : '1px solid black'
+                        ...(isSelectedCurrency && {
+                          borderRight: 'none',
+                          borderTop: isFirstSelectedRow ? 'none' : '1px solid black',
+                          borderBottom: isLastSelectedRow ? 'none' : '1px solid black',
+                        })
                       }}
                     >
                       {formatRibuan(row.sell)}
