@@ -82,20 +82,17 @@ namespace ServerManager
             RestartFrontend();
         }
 
-        private void TerminatePortButton_Click(object sender, RoutedEventArgs e)
+        private void OpenInBrowserButton_Click(object sender, RoutedEventArgs e)
         {
-            TerminatePort8000();
-        }
-
-        private void StartSimpleServerButton_Click(object sender, RoutedEventArgs e)
-        {
-            StartSimpleServer();
+            OpenInBrowser();
         }
 
         private void SetBackendStatus(bool running)
         {
-            BackendStatusText.Text = running ? "Running" : "Stopped";
-            BackendStatusText.Foreground = running ? System.Windows.Media.Brushes.Green : System.Windows.Media.Brushes.Red;
+            BackendStatusText.Text = running ? "✅ Running" : "⭕ Stopped";
+            BackendStatusText.Foreground = running ? 
+                new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(16, 185, 129)) : 
+                new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(239, 68, 68));
             if (running)
             {
                 string ip = GetLocalIPAddress();
@@ -108,8 +105,10 @@ namespace ServerManager
         }
         private void SetFrontendStatus(bool running)
         {
-            FrontendStatusText.Text = running ? "Running" : "Stopped";
-            FrontendStatusText.Foreground = running ? System.Windows.Media.Brushes.Green : System.Windows.Media.Brushes.Red;
+            FrontendStatusText.Text = running ? "✅ Running" : "⭕ Stopped";
+            FrontendStatusText.Foreground = running ? 
+                new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(16, 185, 129)) : 
+                new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(239, 68, 68));
             if (running)
             {
                 string ip = GetLocalIPAddress();
@@ -499,95 +498,55 @@ namespace ServerManager
             StartBackend();
         }
 
-        private void StartSimpleServer()
-        {
-            if (simpleServerProcess != null && !simpleServerProcess.HasExited)
-            {
-                Log("Simple server is already running.");
-                return;
-            }
-
-            simpleServerProcess = new Process();
-            simpleServerProcess.StartInfo.FileName = "node";
-            simpleServerProcess.StartInfo.Arguments = "start-server.js";
-            simpleServerProcess.StartInfo.WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            simpleServerProcess.StartInfo.UseShellExecute = false;
-            simpleServerProcess.StartInfo.RedirectStandardOutput = true;
-            simpleServerProcess.StartInfo.RedirectStandardError = true;
-            simpleServerProcess.StartInfo.CreateNoWindow = true;
-
-            simpleServerProcess.OutputDataReceived += (s, e) =>
-            {
-                if (e.Data != null)
-                {
-                    Dispatcher.Invoke(() => Log("SimpleServer stdout: " + e.Data));
-                }
-            };
-            simpleServerProcess.ErrorDataReceived += (s, e) =>
-            {
-                if (e.Data != null)
-                {
-                    Dispatcher.Invoke(() => Log("SimpleServer stderr: " + e.Data));
-                }
-            };
-            simpleServerProcess.Exited += (s, e) =>
-            {
-                Dispatcher.Invoke(() => Log("SimpleServer exited."));
-            };
-
-            simpleServerProcess.EnableRaisingEvents = true;
-            simpleServerProcess.Start();
-            simpleServerProcess.BeginOutputReadLine();
-            simpleServerProcess.BeginErrorReadLine();
-
-            Log("Simple server started.");
-        }
-
-        private void TerminatePort8000()
+        private void OpenInBrowser()
         {
             try
             {
-                var psi = new ProcessStartInfo("cmd.exe", "/c netstat -ano | findstr :8000")
+                string ip = GetLocalIPAddress();
+                string frontendUrl = $"http://{ip}:8000";
+                
+                // Cek apakah frontend sedang running
+                if (frontendProcess != null && !frontendProcess.HasExited)
                 {
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-                var proc = Process.Start(psi);
-                string output = proc != null ? proc.StandardOutput.ReadToEnd() : string.Empty;
-                if (proc != null) proc.WaitForExit();
-
-                var lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var line in lines)
+                    Log($"Opening browser: {frontendUrl}");
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = frontendUrl,
+                        UseShellExecute = true
+                    });
+                }
+                else
                 {
-                    var parts = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    string pid = parts[parts.Length - 1];
-
-                    var killPsi = new ProcessStartInfo("taskkill", $"/PID {pid} /F")
+                    Log("Frontend is not running. Please start frontend first.");
+                    
+                    // Tampilkan dialog untuk confirm start frontend
+                    var result = MessageBox.Show("Frontend is not running. Do you want to start it first?", 
+                                                "Frontend Not Running", 
+                                                MessageBoxButton.YesNo, 
+                                                MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
                     {
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    };
-                    var killProc = Process.Start(killPsi);
-                    string killOutput = killProc != null ? killProc.StandardOutput.ReadToEnd() : string.Empty;
-                    string killError = killProc != null ? killProc.StandardError.ReadToEnd() : string.Empty;
-                    if (killProc != null) killProc.WaitForExit();
-
-                    if (!string.IsNullOrEmpty(killError))
-                    {
-                        Log($"Error killing PID {pid}: {killError}");
-                    }
-                    else
-                    {
-                        Log($"Terminated process PID {pid} on port 8000");
+                        StartFrontend();
+                        // Wait a bit then try to open browser
+                        var timer = new DispatcherTimer();
+                        timer.Interval = TimeSpan.FromSeconds(3);
+                        timer.Tick += (s, e) =>
+                        {
+                            timer.Stop();
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = frontendUrl,
+                                UseShellExecute = true
+                            });
+                            Log($"Browser opened: {frontendUrl}");
+                        };
+                        timer.Start();
                     }
                 }
             }
             catch (Exception ex)
             {
-                Log("Error terminating port 8000: " + ex.Message);
+                Log($"Error opening browser: {ex.Message}");
             }
         }
 
@@ -605,75 +564,6 @@ namespace ServerManager
         {
             SetBackendStatus(false);
             SetFrontendStatus(false);
-        }
-
-        private void KillPort5000Button_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = "powershell.exe",
-                    Arguments = "netstat -ano | findstr :5000",
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-                var process = Process.Start(psi);
-                if (process != null)
-                {
-                    string output = process.StandardOutput.ReadToEnd();
-                    process.WaitForExit();
-
-                    var lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                    var pids = new HashSet<string>();
-                    foreach (var line in lines)
-                    {
-                        var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                        if (parts.Length >= 5)
-                        {
-                            pids.Add(parts[4]);
-                        }
-                    }
-
-                    if (pids.Count == 0)
-                    {
-                        Log("Tidak ada proses di port 5000.");
-                        return;
-                    }
-
-                    foreach (var pid in pids)
-                    {
-                        var killPsi = new ProcessStartInfo
-                        {
-                            FileName = "powershell.exe",
-                            Arguments = $"taskkill /PID {pid} /F",
-                            RedirectStandardOutput = true,
-                            UseShellExecute = false,
-                            CreateNoWindow = true
-                        };
-                        var killProcess = Process.Start(killPsi);
-                        if (killProcess != null)
-                        {
-                            string killOutput = killProcess.StandardOutput.ReadToEnd();
-                            killProcess.WaitForExit();
-                            Log($"taskkill /PID {pid} /F: {killOutput}");
-                        }
-                        else
-                        {
-                            Log($"Gagal menjalankan taskkill untuk PID {pid}.");
-                        }
-                    }
-                }
-                else
-                {
-                    Log("Gagal menjalankan perintah netstat/findstr.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Log($"Gagal mematikan proses di port 5000: {ex.Message}");
-            }
         }
 
         private void RestartFrontend()

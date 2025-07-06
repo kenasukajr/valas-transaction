@@ -2,6 +2,7 @@
 
 import { useRefresh } from "@/context/RefreshContext"
 import TransactionList from "@/components/TransactionList"
+// import { TestFetch } from "@/components/TestFetch"
 import Link from "next/link"
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -33,6 +34,8 @@ export default function NasabahPage() {
 
       {/* Nasabah List Section */}
       <div className="px-[10px] py-8 w-full">
+
+        
         <TransactionList 
           refreshFlag={refreshFlag} 
           backendUrl="/api/nasabah"

@@ -578,12 +578,21 @@ export default function TransactionList({
                     )}
                     
                     {/* Tabel Transaksi Minimize - Hanya untuk halaman nasabah */}
-                    {backendUrl?.includes("nasabah") && selectedViewTransaction?.id && (
-                      <TransactionSummaryTable 
-                        nasabahId={selectedViewTransaction.id}
-                        backendUrl={backendUrl.replace("/api/nasabah", "")}
-                      />
-                    )}
+                    {backendUrl?.includes("nasabah") && selectedViewTransaction?.id && (() => {
+                      // Untuk halaman nasabah, gunakan BACKEND_URL langsung untuk TransactionSummaryTable
+                      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+                      console.log('TransactionSummaryTable props:', {
+                        nasabahId: selectedViewTransaction.id,
+                        backendUrl: BACKEND_URL,
+                        originalBackendUrl: backendUrl
+                      });
+                      return (
+                        <TransactionSummaryTable 
+                          nasabahId={selectedViewTransaction.id}
+                          backendUrl={BACKEND_URL}
+                        />
+                      );
+                    })()}
                     
                     <div className="flex justify-end gap-2">
                       <DialogClose asChild>

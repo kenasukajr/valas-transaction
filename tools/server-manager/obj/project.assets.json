@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\Blackbox Versi 1.1\\Server Manager\\ServerManager.csproj",
+      "projectUniqueName": "E:\\Blackbox Versi 1.4.1\\tools\\server-manager\\ServerManager.csproj",
       "projectName": "ServerManager",
-      "projectPath": "E:\\Blackbox Versi 1.1\\Server Manager\\ServerManager.csproj",
+      "projectPath": "E:\\Blackbox Versi 1.4.1\\tools\\server-manager\\ServerManager.csproj",
       "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
-      "outputPath": "E:\\Blackbox Versi 1.1\\Server Manager\\obj\\",
+      "outputPath": "E:\\Blackbox Versi 1.4.1\\tools\\server-manager\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

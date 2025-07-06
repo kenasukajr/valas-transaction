@@ -20,27 +20,39 @@ const allowedOrigins = [
   'http://192.168.0.158:8000',
   'http://192.168.0.158:3000',
   'http://192.168.1.5:8000',
+  'http://192.168.1.6:8000',  // Added for network access
+  'http://192.168.1.6:3000',  // Added for network access
+  'http://192.168.1.6:5000',  // Added for network access
   'http://localhost:3001',
   'http://localhost:5000',
 ];
 
 const corsOptions = {
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(null, true); // Allow all origins temporarily to fix CORS issues
-    }
-  },
+  origin: '*', // Allow all origins explicitly
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma'],
+  credentials: false // Disable credentials for simpler CORS
 };
 
 // --- Express app setup ---
 const app = express();
 app.use(cors(corsOptions));
+
+// Manual CORS headers untuk memastikan compatibility
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,Cache-Control,Pragma');
+  res.header('Access-Control-Max-Age', '86400');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 app.use(express.json({ limit: '500mb' }));
 app.use(express.urlencoded({ extended: true, limit: '500mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -375,6 +387,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 server.on('error', (err) => {
   console.error('Server listen error:', err);
 });
+
 
 
 
