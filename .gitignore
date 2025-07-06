@@ -1,0 +1,80 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production builds
+.next/
+out/
+dist/
+build/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+frontend.log
+backend.log
+
+# Runtime data
+.npm
+.eslintcache
+
+# Optional npm cache directory
+.npm/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode/settings.json
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
+
+# Windows
+desktop.ini
+
+# Binary files
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Server uploads (keep some samples but ignore most)
+backend/uploads/*.jpg
+backend/uploads/*.png
+backend/uploads/*.gif
+!backend/uploads/image.jpg
+!backend/uploads/image_1.jpg
+!backend/uploads/image_2.jpg

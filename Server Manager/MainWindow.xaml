@@ -1,0 +1,28 @@
+<Window x:Class="ServerManager.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Server Manager" Height="400" Width="600">
+    <Grid Margin="10">
+        <StackPanel>
+            <TextBlock Text="Backend Controls" FontWeight="Bold" Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10" VerticalAlignment="Center">
+                <Button Name="StartBackendButton" Content="Start Backend" Width="100" Margin="5" Click="StartBackendButton_Click"/>
+                <Button Name="StopBackendButton" Content="Stop Backend" Width="100" Margin="5" Click="StopBackendButton_Click"/>
+                <TextBlock Text="Backend Status: " FontWeight="Bold" Margin="20,0,0,0"/>
+                <TextBlock Name="BackendStatusText" Text="Stopped" Foreground="Red" Margin="5,0,0,0"/>
+                <TextBlock Name="BackendIpPortText" Text="" Margin="10,0,0,0"/>
+            </StackPanel>
+
+            <TextBlock Text="Frontend Controls" FontWeight="Bold" Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10" VerticalAlignment="Center">
+                <Button Name="StartFrontendButton" Content="Start Frontend" Width="100" Margin="5" Click="StartFrontendButton_Click"/>
+                <Button Name="StopFrontendButton" Content="Stop Frontend" Width="100" Margin="5" Click="StopFrontendButton_Click"/>
+                <TextBlock Text="Frontend Status: " FontWeight="Bold" Margin="20,0,0,0"/>
+                <TextBlock Name="FrontendStatusText" Text="Stopped" Foreground="Red" Margin="5,0,0,0"/>
+                <TextBlock Name="FrontendIpPortText" Text="" Margin="10,0,0,0"/>
+            </StackPanel>
+
+            <TextBox Name="LogTextBox" Margin="0,10,0,0" Height="150" VerticalScrollBarVisibility="Auto" IsReadOnly="True" TextWrapping="Wrap"/>
+        </StackPanel>
+    </Grid>
+</Window>

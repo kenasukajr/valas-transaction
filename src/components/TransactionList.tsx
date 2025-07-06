@@ -1,0 +1,691 @@
+"use client"
+
+import React, { useEffect, useState } from "react"
+import { toast } from "sonner"
+
+function formatDate(dateString: string): string {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return dateString;
+  const day = ("0" + date.getDate()).slice(-2);
+  const month = ("0" + (date.getMonth() + 1)).slice(-2);
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+function formatTime(dateString: string): string {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return dateString;
+  const hours = ("0" + date.getHours()).slice(-2);
+  const minutes = ("0" + date.getMinutes()).slice(-2);
+  const seconds = ("0" + date.getSeconds()).slice(-2);
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+interface Transaction {
+  id: number
+  name: string
+  address: string
+  phone: string
+  job: string
+  idNumber: string
+  birthPlace: string
+  birthDate: string
+  image?: string
+  transactionNumber?: string
+  date?: string
+  transactionType?: string
+  jenisTransaksi?: string
+  // Data transaksi valas
+  currency?: string
+  amount?: number
+  rate?: number
+  rupiahEquivalent?: number
+  totalRupiah?: number
+  pembayaranRp?: number | null
+  kembalianRp?: number | null
+  transactionOrder?: number
+  totalTransactions?: number
+}
+
+// Add Nasabah type for formData compatibility
+interface Nasabah {
+  idNumber: string;
+  name: string;
+  address: string;
+  phone: string;
+  job: string;
+  birthPlace: string;
+  birthDate: string;
+  transactionType?: string;
+  image?: string;
+  [key: string]: unknown;
+}
+
+import { UserFormRight } from "./UserFormRight"
+import { UserFormNasabah } from "./UserFormNasabah"
+import { UserFormTransaksi } from "./UserFormTransaksi"
+import { ImageGallery } from "./ImageGallery"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
+
+interface TransactionListProps {
+  refreshFlag: boolean
+  toggleRefresh?: () => void
+  showDeleteButtons?: boolean
+  showEditButtons?: boolean
+  backendUrl?: string
+  showTransactionNumber?: boolean
+  showRowNumber?: boolean
+  showTransactionType?: boolean
+  sortByDateDesc?: boolean
+  showDateColumn?: boolean
+  showTimeColumn?: boolean
+  showValasColumns?: boolean  // Kontrol tampilan kolom valas
+}
+
+export default function TransactionList({
+  refreshFlag,
+  toggleRefresh,
+  showDeleteButtons = false,
+  showEditButtons = false,
+  backendUrl,
+  showTransactionNumber = false,
+  showRowNumber = false,
+  showTransactionType = false,
+  sortByDateDesc = false,
+  showDateColumn = true,
+  showTimeColumn = true,
+  showValasColumns = true,  // Default true untuk backward compatibility
+}: TransactionListProps) {
+  // Ambil env var tanpa fallback ke localhost
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+  // Jika backendUrl prop tidak diberikan, gunakan BACKEND_URL + /api/transactions
+  const effectiveBackendUrl = backendUrl || (BACKEND_URL ? `${BACKEND_URL}/api/transactions` : undefined);
+
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<number[]>([])
+  const [passwordInput, setPasswordInput] = useState<string>("")
+  const [passwordError, setPasswordError] = useState<string>("")
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState<boolean>(false)
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState<boolean>(false)
+  const [singleDeleteId, setSingleDeleteId] = useState<number | null>(null)
+  const [isViewModalOpen, setIsViewModalOpen] = useState<boolean>(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false)
+  const [selectedViewTransaction, setSelectedViewTransaction] = useState<Transaction | null>(null)
+  const [selectedEditTransaction, setSelectedEditTransaction] = useState<Transaction | null>(null)
+  const [formData, setFormData] = useState<Partial<Transaction>>({})
+  const [relatedTransactions, setRelatedTransactions] = useState<Transaction[]>([])  // Transaksi valas terkait
+
+  const fetchTransactions = async () => {
+    setLoading(true)
+    setError(null)
+    // Jika env var tidak ada, tampilkan error jelas
+    if (!effectiveBackendUrl) {
+      setError("NEXT_PUBLIC_BACKEND_URL tidak tersedia. Hubungi admin/server manager.");
+      setLoading(false);
+      return;
+    }
+    try {
+      const url = effectiveBackendUrl;
+      const res = await fetch(url)
+      if (!res.ok) {
+        throw new Error("Failed to fetch data")
+      }
+      let data: Transaction[] = await res.json()
+      // Tambahkan id unik jika tidak ada (untuk data nasabah)
+      data = data.map((item, idx) => ({
+        ...item,
+        id: typeof item.id === 'number' ? item.id : idx + 1
+      }))
+      if (sortByDateDesc) {
+        // Sort data by date descending (newest first)
+        data.sort((a: Transaction, b: Transaction) => {
+          const dateA = new Date(a.date || "").getTime()
+          const dateB = new Date(b.date || "").getTime()
+          return dateB - dateA
+        })
+      }
+      setTransactions(data)
+    } catch (err) {
+      setError((err as Error).message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchTransactions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshFlag])
+
+  const handleDelete = async (id: number) => {
+    setSingleDeleteId(id)
+    setPasswordInput("")
+    setPasswordError("")
+    setIsPasswordDialogOpen(true)
+  }
+
+  const handleEditClick = (tx: Transaction) => {
+    setSelectedEditTransaction(tx)
+    setFormData(tx)
+    setIsEditModalOpen(true)
+  }
+
+  const handleViewClick = (tx: Transaction) => {
+    setSelectedViewTransaction(tx)
+    setFormData(tx)
+    // Ambil semua transaksi dengan nomor transaksi yang sama untuk ditampilkan di tabel valas
+    if (tx.transactionNumber) {
+      const related = transactions.filter(t => t.transactionNumber === tx.transactionNumber)
+      setRelatedTransactions(related)
+    } else {
+      setRelatedTransactions([tx])  // Jika tidak ada nomor transaksi, tampilkan transaksi itu sendiri
+    }
+    setIsViewModalOpen(true)
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData((prev: any) => ({ ...prev, [name]: value }))
+  }
+
+  const handleImagePaste = (e: React.ClipboardEvent<Element>) => {
+    // Implementation for image paste if needed
+  }
+
+  // Fungsi upload gambar ke backend dan set formData.image
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formDataUpload = new FormData();
+    formDataUpload.append('image', file);
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataUpload,
+      });
+      if (!res.ok) throw new Error('Upload gagal');
+      const data = await res.json();
+      setFormData((prev: any) => ({ ...prev, image: data.imageUrl }));
+    } catch (err) {
+      alert('Gagal upload gambar');
+    }
+  }
+
+  // Fungsi upload gambar ke backend dan set formData.image (untuk data nasabah)
+  const handleImageUploadNasabah = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formDataUpload = new FormData();
+    formDataUpload.append('image', file);
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataUpload,
+      });
+      if (!res.ok) throw new Error('Upload gagal');
+      const data = await res.json();
+      setFormData((prev: any) => ({ ...prev, image: data.imageUrl }));
+    } catch (err) {
+      alert('Gagal upload gambar');
+    }
+  }
+
+  const clearImage = () => {
+    setFormData((prev: any) => ({ ...prev, image: null }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!effectiveBackendUrl) {
+      alert("NEXT_PUBLIC_BACKEND_URL tidak tersedia. Hubungi admin/server manager.");
+      return;
+    }
+    try {
+      let url = effectiveBackendUrl
+      let method = selectedEditTransaction ? "PUT" : "POST"
+      // Jika edit, tambahkan /:id di url
+      if (selectedEditTransaction && formData.id) {
+        url = url.endsWith('/') ? url + formData.id : url + '/' + formData.id
+      }
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+      if (!res.ok) {
+        throw new Error("Failed to save data")
+      }
+      toast.success("Data berhasil disimpan")
+      setIsEditModalOpen(false)
+      await fetchTransactions()
+      if (toggleRefresh) {
+        toggleRefresh()
+      }
+    } catch (err) {
+      alert("Gagal menyimpan data: " + (err as Error).message)
+    }
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === transactions.length) {
+      setSelectedIds([])
+    } else {
+      setSelectedIds(transactions.map(tx => tx.id))
+    }
+  }
+
+  const toggleSelectOne = (id: number) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(selectedId => selectedId !== id))
+    } else {
+      setSelectedIds([...selectedIds, id])
+    }
+  }
+
+  const handleBulkDeleteClick = () => {
+    if (selectedIds.length === 0) return
+    setPasswordInput("")
+    setPasswordError("")
+    setIsPasswordDialogOpen(true)
+  }
+
+  const handleConfirmBulkDelete = async () => {
+    if (passwordInput !== "1234567890") {
+      setPasswordError("Salah password")
+      return
+    }
+    setPasswordError("")
+    setIsPasswordDialogOpen(false)
+    setIsConfirmDialogOpen(true)
+  }
+
+  const handleConfirmBulkDeleteAction = async () => {
+    if (!effectiveBackendUrl) {
+      alert("NEXT_PUBLIC_BACKEND_URL tidak tersedia. Hubungi admin/server manager.");
+      setIsConfirmDialogOpen(false);
+      return;
+    }
+    if (singleDeleteId !== null) {
+      // Single delete flow
+      try {
+        let url = effectiveBackendUrl
+        // Jika delete nasabah, pastikan endpoint /:id dan id string
+        if (backendUrl && backendUrl.includes('nasabah')) {
+          url = url.endsWith('/') ? url + String(singleDeleteId) : url + '/' + String(singleDeleteId)
+        } else {
+          url = url.endsWith('/') ? url + singleDeleteId : url + '/' + singleDeleteId
+        }
+        const res = await fetch(url, { method: "DELETE" })
+        if (!res.ok) {
+          throw new Error("Failed to delete data")
+        }
+        toast.success("Data berhasil dihapus")
+        setSingleDeleteId(null)
+        await fetchTransactions()
+        if (toggleRefresh) {
+          toggleRefresh()
+        }
+      } catch (err) {
+        alert("Gagal menghapus data: " + (err as Error).message)
+      } finally {
+        setIsConfirmDialogOpen(false)
+      }
+    } else {
+      // Bulk delete flow
+      try {
+        const url = effectiveBackendUrl
+        const bulkDeleteUrl = url.endsWith('/') ? url + 'bulk-delete' : url + '/bulk-delete'
+        const res = await fetch(bulkDeleteUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: selectedIds.map(String) })
+        })
+        if (!res.ok) {
+          throw new Error('Failed to bulk delete')
+        }
+        toast.success("Data berhasil dihapus")
+        setSelectedIds([])
+        await fetchTransactions()
+        if (toggleRefresh) {
+          toggleRefresh()
+        }
+      } catch (err) {
+        alert("Gagal menghapus data: " + (err as Error).message)
+      } finally {
+        setIsConfirmDialogOpen(false)
+      }
+    }
+  }
+
+  const handleCancelDelete = () => {
+    setIsPasswordDialogOpen(false)
+    setIsConfirmDialogOpen(false)
+    setPasswordInput("")
+    setPasswordError("")
+  }
+
+  // Fix: Ensure formData always has all required fields for Nasabah
+  const getSafeFormData = (): Nasabah & { images: string[] } => {
+    let images: string[] = [];
+    if (Array.isArray((formData as any).images)) {
+      images = ((formData as any).images).filter((img: any) => typeof img === 'string');
+    } else if (typeof formData.image === 'string' && formData.image) {
+      images = [formData.image];
+    }
+    return {
+      idNumber: formData.idNumber || '',
+      name: formData.name || '',
+      address: formData.address || '',
+      phone: formData.phone || '',
+      job: formData.job || '',
+      birthPlace: formData.birthPlace || '',
+      birthDate: formData.birthDate || '',
+      transactionType: formData.transactionType || '',
+      image: formData.image || '',
+      images,
+      // ...add other fields as needed
+    };
+  }
+
+  if (loading) {
+    return <p>Loading...</p>
+  }
+
+  if (error) {
+    return <p style={{ color: 'red', fontWeight: 'bold' }}>Error: {error}</p>
+  }
+
+  if (transactions.length === 0) {
+    return <p>Tidak ada data transaksi.</p>
+  }
+
+  return (
+    <>
+      <div className="mb-4 flex justify-between items-center">
+        <a
+          href="/"
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center gap-2"
+        >
+          <span>←</span> Kembali
+        </a>
+        <button
+          onClick={handleBulkDeleteClick}
+          disabled={selectedIds.length === 0}
+          className={`bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded shadow transition-colors duration-300 ${selectedIds.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+          type="button"
+        >
+          Hapus Terpilih
+        </button>
+      </div>
+      <table className="min-w-full border-collapse border border-gray-300 text-sm">
+        <thead className="bg-blue-600 text-white">
+          <tr>
+            <th className="border border-gray-300 px-2 py-1 text-center">
+              <input
+                type="checkbox"
+                checked={selectedIds.length === transactions.length && transactions.length > 0}
+                onChange={toggleSelectAll}
+              />
+            </th>
+          {showDateColumn && <th className="border border-gray-300 px-2 py-1 text-center">Tgl Transaksi</th>}
+          {showTimeColumn && <th className="border border-gray-300 px-2 py-1 text-center">Waktu Transaksi</th>}
+          {showRowNumber && <th className="border border-gray-300 px-2 py-1 text-center">No</th>}
+          {showTransactionNumber && <th className="border border-gray-300 px-2 py-1 text-center">No. Transaksi</th>}
+          {showTransactionType && <th className="border border-gray-300 px-2 py-1 text-center max-w-[80px]">BNB/BNS</th>}
+          <th className="border border-gray-300 px-2 py-1 text-left">Nama</th>
+          {!showValasColumns && <th className="border border-gray-300 px-2 py-1 text-left">No. ID</th>}
+          {!showValasColumns && <th className="border border-gray-300 px-2 py-1 text-left">Alamat</th>}
+          {!showValasColumns && <th className="border border-gray-300 px-2 py-1 text-left">No. Telepon</th>}
+          {!showValasColumns && <th className="border border-gray-300 px-2 py-1 text-left">Pekerjaan</th>}
+          {showValasColumns && <th className="border border-gray-300 px-2 py-1 text-center">Currency</th>}
+          {showValasColumns && <th className="border border-gray-300 px-2 py-1 text-center">Amount</th>}
+          {showValasColumns && <th className="border border-gray-300 px-2 py-1 text-center">Rate</th>}
+          {showValasColumns && <th className="border border-gray-300 px-2 py-1 text-center">Jumlah Rupiah</th>}
+          {showDeleteButtons && <th className="border border-gray-300 px-2 py-1">Aksi</th>}
+          {showEditButtons && <th className="border border-gray-300 px-2 py-1">Ubah</th>}
+          <th className="border border-gray-300 px-2 py-1">Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map((tx, index) => (
+            <tr key={tx.id} className={`border border-gray-300 ${index % 2 !== 0 ? "bg-gray-50" : "bg-white"} hover:bg-gray-100`}>
+              <td className="border border-gray-300 px-2 py-0.5 text-center">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(tx.id)}
+                  onChange={() => toggleSelectOne(tx.id)}
+                />
+              </td>
+              {showDateColumn && <td className="border border-gray-300 px-2 py-0.5 truncate max-w-xs text-center">{formatDate(tx.date || "")}</td>}
+              {showTimeColumn && <td className="border border-gray-300 px-2 py-0.5 truncate max-w-xs text-center">{formatTime(tx.date || "")}</td>}
+              {showRowNumber && <td className="border border-gray-300 px-2 py-0.5 truncate max-w-xs text-center">{index + 1}</td>}
+              {showTransactionNumber && <td className="border border-gray-300 px-2 py-0.5 truncate max-w-xs text-center">{tx.transactionNumber}</td>}
+              {showTransactionType && <td className="border border-gray-300 px-2 py-0.5 truncate max-w-[80px] text-center">{tx.transactionType}</td>}
+              <td className="border border-gray-300 px-2 py-0.5 truncate max-w-xs">{tx.name}</td>
+              {!showValasColumns && <td className="border border-gray-300 px-2 py-0.5 truncate max-w-xs">{tx.idNumber}</td>}
+              {!showValasColumns && <td className="border border-gray-300 px-2 py-0.5 truncate max-w-[150px]">{tx.address}</td>}
+              {!showValasColumns && <td className="border border-gray-300 px-2 py-0.5 truncate max-w-xs">{tx.phone}</td>}
+              {!showValasColumns && <td className="border border-gray-300 px-2 py-0.5 truncate max-w-xs">{tx.job}</td>}
+              {showValasColumns && <td className="border border-gray-300 px-2 py-0.5 truncate max-w-xs text-center">{tx.currency || '-'}</td>}
+              {showValasColumns && <td className="border border-gray-300 px-2 py-0.5 truncate max-w-xs text-center">{tx.amount ? tx.amount.toLocaleString() : '-'}</td>}
+              {showValasColumns && <td className="border border-gray-300 px-2 py-0.5 truncate max-w-xs text-center">{tx.rate ? tx.rate.toLocaleString() : '-'}</td>}
+              {showValasColumns && <td className="border border-gray-300 px-2 py-0.5 truncate max-w-xs text-center">{tx.rupiahEquivalent ? tx.rupiahEquivalent.toLocaleString() : '-'}</td>}
+              {showDeleteButtons && (
+                <td className="border border-gray-300 px-2 py-0.5 text-center">
+                  <button onClick={() => handleDelete(tx.id)} className="text-red-600 hover:text-red-800">
+                    Hapus
+                  </button>
+                </td>
+              )}
+              {showEditButtons && (
+                <td className="border border-gray-300 px-2 py-0.5 text-center">
+                  <button
+                    className="text-blue-600 hover:text-blue-800"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleEditClick(tx)
+                    }}
+                  >
+                    Ubah
+                  </button>
+                </td>
+              )}
+              <td className="border border-gray-300 px-2 py-0.5 text-center">
+                <button
+                  className="text-green-600 hover:text-green-800"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleViewClick(tx)
+                  }}
+                >
+                  Lihat
+                </button>
+                <Dialog open={isViewModalOpen && selectedViewTransaction?.id === tx.id} onOpenChange={setIsViewModalOpen}>
+                <DialogContent className="w-full bg-white" style={{ width: '1400px', maxWidth: '1400px' }} aria-describedby="dialog-desc-view">
+                  <DialogHeader>
+                    <DialogTitle className="block pl-5 m-0">Lihat Data</DialogTitle>
+                  </DialogHeader>
+                  <p id="dialog-desc-view" className="sr-only">Detail data nasabah</p>
+                  <div className="space-y-4">
+                    <UserFormNasabah
+                      formData={getSafeFormData()}
+                      handleChange={() => {}}
+                      handleImagePaste={() => {}}
+                      handleImageUpload={() => {}}
+                      clearImage={() => {}}
+                      handleSubmit={() => {}}
+                      readOnly={true}
+                    />
+                    
+                    {/* Tabel Transaksi Valas */}
+                    {relatedTransactions.length > 0 && relatedTransactions.some(t => t.currency) && (
+                      <div className="mt-6">
+                        <h3 className="text-lg font-semibold mb-4">Detail Transaksi Valas</h3>
+                        <table className="min-w-full border-collapse border border-gray-300 text-sm">
+                          <thead className="bg-blue-600 text-white">
+                            <tr>
+                              <th className="border border-gray-300 px-2 py-1 text-center">No</th>
+                              <th className="border border-gray-300 px-2 py-1 text-center">Currency</th>
+                              <th className="border border-gray-300 px-2 py-1 text-center">Amount</th>
+                              <th className="border border-gray-300 px-2 py-1 text-center">Rate</th>
+                              <th className="border border-gray-300 px-2 py-1 text-center">Jumlah Rupiah</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {relatedTransactions
+                              .filter(t => t.currency)  // Hanya tampilkan yang memiliki data valas
+                              .sort((a, b) => (a.transactionOrder || 0) - (b.transactionOrder || 0))  // Urutkan berdasarkan order
+                              .map((tx, index) => (
+                              <tr key={tx.id} className={`border border-gray-300 ${index % 2 !== 0 ? "bg-gray-50" : "bg-white"}`}>
+                                <td className="border border-gray-300 px-2 py-1 text-center">{index + 1}</td>
+                                <td className="border border-gray-300 px-2 py-1 text-center">{tx.currency}</td>
+                                <td className="border border-gray-300 px-2 py-1 text-center">{tx.amount?.toLocaleString()}</td>
+                                <td className="border border-gray-300 px-2 py-1 text-center">{tx.rate?.toLocaleString()}</td>
+                                <td className="border border-gray-300 px-2 py-1 text-center">Rp {tx.rupiahEquivalent?.toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        {relatedTransactions.length > 1 && relatedTransactions[0]?.totalRupiah && (
+                          <div className="mt-4 text-right">
+                            <p className="text-lg font-semibold">
+                              Total Keseluruhan: Rp {relatedTransactions[0].totalRupiah.toLocaleString()}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-end gap-2">
+                      <DialogClose asChild>
+                        <button type="button" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow transition-colors duration-300">
+                          Tutup
+                        </button>
+                      </DialogClose>
+                    </div>
+                  </div>
+                  </DialogContent>
+                </Dialog>
+                <Dialog open={isEditModalOpen && selectedEditTransaction?.id === tx.id} onOpenChange={setIsEditModalOpen}>
+                <DialogContent className="w-full bg-white" style={{ width: '1400px', maxWidth: '1400px' }} aria-describedby="dialog-desc-edit">
+                  <DialogHeader>
+                    <DialogTitle className="block pl-5 m-0">Ubah Data</DialogTitle>
+                  </DialogHeader>
+                  <p id="dialog-desc-edit" className="sr-only">Edit data nasabah</p>
+                  <>
+                    {backendUrl?.includes("nasabah") ? (
+                      <UserFormNasabah
+                        formData={{
+                          ...getSafeFormData(),
+                          setFormData,
+                          onImagesChange: (images: string[]) => setFormData((prev: any) => ({ ...prev, images })),
+                        }}
+                        handleChange={handleInputChange}
+                        handleImagePaste={handleImagePaste}
+                        handleImageUpload={handleImageUploadNasabah}
+                        clearImage={clearImage}
+                        handleSubmit={handleSubmit}
+                        readOnly={false}
+                      />
+                    ) : (
+                      <UserFormTransaksi
+                        formData={getSafeFormData()}
+                        handleChange={handleInputChange}
+                        handleImagePaste={handleImagePaste}
+                        handleImageUpload={handleImageUpload}
+                        clearImage={clearImage}
+                        handleSubmit={handleSubmit}
+                      />
+                    )}
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={handleSubmit}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow transition-colors duration-300"
+                      >
+                        Simpan
+                      </button>
+                      <DialogClose asChild>
+                        <button
+                          type="button"
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow transition-colors duration-300"
+                        >
+                          Batal
+                        </button>
+                      </DialogClose>
+                    </div>
+                  </>
+                  </DialogContent>
+                </Dialog>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Password Dialog */}
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+      <DialogContent className="sm:max-w-[425px]" aria-describedby="dialog-desc-password">
+          <DialogHeader>
+            <DialogTitle>Masukkan Password</DialogTitle>
+          </DialogHeader>
+          <p id="dialog-desc-password" className="sr-only">Masukkan password untuk konfirmasi hapus.</p>
+          <div className="grid gap-4 py-4">
+            <input
+              type="password"
+              placeholder="Password"
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              className="w-full rounded border border-gray-300 px-3 py-2"
+            />
+            {passwordError && <p className="text-red-600 text-sm">{passwordError}</p>}
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={handleConfirmBulkDelete}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow transition-colors duration-300"
+            >
+              Konfirmasi
+            </button>
+            <button
+              onClick={handleCancelDelete}
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded shadow transition-colors duration-300"
+            >
+              Batal
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Bulk Delete Dialog */}
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+      <DialogContent className="sm:max-w-[425px]" aria-describedby="dialog-desc-confirm">
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Hapus</DialogTitle>
+          </DialogHeader>
+          <p id="dialog-desc-confirm" className="sr-only">Konfirmasi hapus data.</p>
+          <div className="py-4">
+            <p>Apakah Anda yakin ingin menghapus data terpilih?</p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={handleConfirmBulkDeleteAction}
+              className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded shadow transition-colors duration-300"
+            >
+              Hapus
+            </button>
+            <button
+              onClick={handleCancelDelete}
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded shadow transition-colors duration-300"
+            >
+              Batal
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}

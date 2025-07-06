@@ -1,0 +1,696 @@
+using System.Windows.Controls;
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
+using System.Windows;
+using System.Windows.Threading;
+
+namespace ServerManager
+{
+    public partial class MainWindow : Window
+    {
+        // ...existing code...
+        // Dialog pemilihan IP LAN custom (WPF)
+        private string ShowIpSelectionDialogWpf(System.Collections.Generic.List<string> ipList)
+        {
+            var dialog = new Window
+            {
+                Title = "Pilih IP LAN",
+                Width = 400,
+                Height = 200,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                ResizeMode = ResizeMode.NoResize,
+                Owner = this
+            };
+            var stack = new StackPanel { Margin = new Thickness(20) };
+            stack.Children.Add(new TextBlock { Text = "Pilih IP LAN yang akan digunakan untuk backend/frontend:", Margin = new Thickness(0,0,0,10) });
+            var combo = new ComboBox { ItemsSource = ipList, SelectedIndex = 0, Margin = new Thickness(0,0,0,10) };
+            stack.Children.Add(combo);
+            var okBtn = new Button { Content = "OK", Width = 80, IsDefault = true, HorizontalAlignment = HorizontalAlignment.Right };
+            stack.Children.Add(okBtn);
+            dialog.Content = stack;
+            string selectedIp = ipList[0];
+            okBtn.Click += (s, e) => {
+                if (combo.SelectedItem != null)
+                    selectedIp = combo.SelectedItem.ToString();
+                dialog.DialogResult = true;
+                dialog.Close();
+            };
+            dialog.ShowDialog();
+            return selectedIp;
+        }
+        // ...existing code...
+        // Gunakan nullable agar bisa di-set null
+        private Process? backendProcess;
+        private Process? frontendProcess;
+        private Process? simpleServerProcess;
+
+        public MainWindow()
+        {
+            InitializeComponent();
+        }
+
+        private void StartBackendButton_Click(object sender, RoutedEventArgs e)
+        {
+            StartBackend();
+        }
+
+        private void StopBackendButton_Click(object sender, RoutedEventArgs e)
+        {
+            StopBackend();
+        }
+
+        private void RestartBackendButton_Click(object sender, RoutedEventArgs e)
+        {
+            RestartBackend();
+        }
+
+        private void StartFrontendButton_Click(object sender, RoutedEventArgs e)
+        {
+            StartFrontend();
+        }
+
+        private void StopFrontendButton_Click(object sender, RoutedEventArgs e)
+        {
+            StopFrontend();
+        }
+
+        private void RestartFrontendButton_Click(object sender, RoutedEventArgs e)
+        {
+            RestartFrontend();
+        }
+
+        private void TerminatePortButton_Click(object sender, RoutedEventArgs e)
+        {
+            TerminatePort8000();
+        }
+
+        private void StartSimpleServerButton_Click(object sender, RoutedEventArgs e)
+        {
+            StartSimpleServer();
+        }
+
+        private void SetBackendStatus(bool running)
+        {
+            BackendStatusText.Text = running ? "Running" : "Stopped";
+            BackendStatusText.Foreground = running ? System.Windows.Media.Brushes.Green : System.Windows.Media.Brushes.Red;
+            if (running)
+            {
+                string ip = GetLocalIPAddress();
+                BackendIpPortText.Text = $"http://{ip}:5000";
+            }
+            else
+            {
+                BackendIpPortText.Text = string.Empty;
+            }
+        }
+        private void SetFrontendStatus(bool running)
+        {
+            FrontendStatusText.Text = running ? "Running" : "Stopped";
+            FrontendStatusText.Foreground = running ? System.Windows.Media.Brushes.Green : System.Windows.Media.Brushes.Red;
+            if (running)
+            {
+                string ip = GetLocalIPAddress();
+                FrontendIpPortText.Text = $"http://{ip}:8000";
+            }
+            else
+            {
+                FrontendIpPortText.Text = string.Empty;
+            }
+        }
+
+        private string GetLocalIPAddress()
+        {
+            try
+            {
+                var interfaces = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
+                var ipList = new List<string>();
+                foreach (var ni in interfaces)
+                {
+                    if (ni.OperationalStatus == System.Net.NetworkInformation.OperationalStatus.Up &&
+                        ni.NetworkInterfaceType != System.Net.NetworkInformation.NetworkInterfaceType.Loopback)
+                    {
+                        var props = ni.GetIPProperties();
+                        foreach (var ua in props.UnicastAddresses)
+                        {
+                            if (ua.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork &&
+                                !ua.Address.ToString().StartsWith("169.254") &&
+                                !ua.Address.ToString().StartsWith("127."))
+                            {
+                                ipList.Add(ua.Address.ToString());
+                            }
+                        }
+                    }
+                }
+                if (ipList.Count == 1)
+                {
+                    Log($"[IP DEBUG] Hanya satu IP LAN terdeteksi: {ipList[0]}");
+                    return ipList[0];
+                }
+                else if (ipList.Count > 1)
+                {
+                    Log($"[IP DEBUG] Beberapa IP LAN terdeteksi: {string.Join(", ", ipList)}");
+                    // Tampilkan dialog pemilihan IP (WPF)
+                    string selectedIp = ShowIpSelectionDialogWpf(ipList);
+                    Log($"[IP DEBUG] IP yang dipilih untuk backend/frontend: {selectedIp}");
+                    return selectedIp;
+                }
+                else
+                {
+                    Log("[IP DEBUG] Tidak ada IP LAN yang ditemukan, fallback ke localhost.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"[IP DEBUG] Error GetLocalIPAddress: {ex.Message}");
+            }
+            return "localhost";
+        }
+
+        // Fungsi dialog pemilihan IP sederhana
+        private string ShowIpSelectionDialog(List<string> ipList)
+        {
+            string selectedIp = ipList[0];
+            string message = "Pilih IP LAN yang akan digunakan untuk backend/frontend:\n\n";
+            for (int i = 0; i < ipList.Count; i++)
+            {
+                message += $"[{i + 1}] {ipList[i]}\n";
+            }
+            message += "\nMasukkan nomor IP yang dipilih (1 - " + ipList.Count + "):";
+            string input = Microsoft.VisualBasic.Interaction.InputBox(message, "Pilih IP LAN", "1");
+            if (int.TryParse(input, out int idx) && idx >= 1 && idx <= ipList.Count)
+            {
+                selectedIp = ipList[idx - 1];
+            }
+            return selectedIp;
+        }
+
+        private void StartBackend()
+        {
+            if (backendProcess != null && !backendProcess.HasExited)
+            {
+                Log("Backend is already running.");
+                return;
+            }
+
+            // Ambil root project dari empat level di atas folder EXE
+            var exeDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            if (exeDir == null)
+            {
+                Log("Gagal mendapatkan direktori aplikasi.");
+                SetBackendStatus(false);
+                return;
+            }
+            var projectRoot = System.IO.Path.GetFullPath(System.IO.Path.Combine(exeDir, "..", "..", "..", ".."));
+            var backendDir = System.IO.Path.Combine(projectRoot, "backend");
+            Log($"Resolved backend working directory: {backendDir}");
+            if (!System.IO.Directory.Exists(backendDir))
+            {
+                Log($"Backend folder not found: {backendDir}");
+                SetBackendStatus(false);
+                return;
+            }
+
+            // Pastikan server.js listen di 0.0.0.0
+            var serverJsPath = System.IO.Path.Combine(backendDir, "server.js");
+            if (System.IO.File.Exists(serverJsPath))
+            {
+                string text = System.IO.File.ReadAllText(serverJsPath);
+                text = System.Text.RegularExpressions.Regex.Replace(text, @"app.listen\(([^,]+), ?'[^']*'", "app.listen($1, '0.0.0.0'");
+                System.IO.File.WriteAllText(serverJsPath, text);
+            }
+
+            backendProcess = new Process();
+            backendProcess.StartInfo.FileName = "cmd.exe";
+            backendProcess.StartInfo.Arguments = "/c node server.js";
+            backendProcess.StartInfo.WorkingDirectory = backendDir;
+            backendProcess.StartInfo.UseShellExecute = false;
+            backendProcess.StartInfo.RedirectStandardOutput = true;
+            backendProcess.StartInfo.RedirectStandardError = true;
+            backendProcess.StartInfo.CreateNoWindow = true;
+
+            backendProcess.OutputDataReceived += (s, e) =>
+            {
+                if (e.Data != null)
+                {
+                    Dispatcher.Invoke(() => Log("Backend stdout: " + e.Data));
+                }
+            };
+            backendProcess.ErrorDataReceived += (s, e) =>
+            {
+                if (e.Data != null)
+                {
+                    Dispatcher.Invoke(() => Log("Backend stderr: " + e.Data));
+                }
+            };
+            backendProcess.Exited += (s, e) =>
+            {
+                try
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        Log("Backend exited. Exit code: " + backendProcess.ExitCode);
+                        SetBackendStatus(false);
+                        if (backendProcess.ExitCode != 0)
+                        {
+                            Log("Backend exited unexpectedly. Cek apakah Node.js sudah terinstall dan file server.js ada di folder backend.");
+                        }
+                        // Jangan pernah panggil Close() atau Shutdown() di sini
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.Invoke(() => Log($"Error in backend Exited handler: {ex.Message}"));
+                }
+            };
+
+            backendProcess.EnableRaisingEvents = true;
+            backendProcess.Start();
+            backendProcess.BeginOutputReadLine();
+            backendProcess.BeginErrorReadLine();
+            SetBackendStatus(true);
+            Log("Backend started.");
+            Log($"Backend working directory: {backendProcess.StartInfo.WorkingDirectory}");
+        }
+
+        private void StopBackend()
+        {
+            if (backendProcess != null)
+            {
+                try
+                {
+                    if (!backendProcess.HasExited)
+                    {
+                        backendProcess.Kill();
+                        Log("Backend stopped (kill signal sent).");
+                    }
+                    else
+                    {
+                        Log("Backend process already exited.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"Error stopping backend: {ex.Message}");
+                }
+                SetBackendStatus(false);
+                backendProcess = null;
+            }
+            else
+            {
+                SetBackendStatus(false);
+                Log("Backend is not running.");
+            }
+            // Kill port 5000
+            try
+            {
+                var psi = new ProcessStartInfo("cmd.exe", "/c netstat -ano | findstr :5000")
+                {
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                var proc = Process.Start(psi);
+                string output = proc != null ? proc.StandardOutput.ReadToEnd() : string.Empty;
+                if (proc != null) proc.WaitForExit();
+                var lines = output.Split(new[] { System.Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var line in lines)
+                {
+                    var parts = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    string pid = parts[parts.Length - 1];
+                    var killPsi = new ProcessStartInfo("taskkill", $"/PID {pid} /F")
+                    {
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+                    var killProc = Process.Start(killPsi);
+                    string killOutput = killProc != null ? killProc.StandardOutput.ReadToEnd() : string.Empty;
+                    string killError = killProc != null ? killProc.StandardError.ReadToEnd() : string.Empty;
+                    if (killProc != null) killProc.WaitForExit();
+                    if (!string.IsNullOrEmpty(killError))
+                    {
+                        Log($"Error killing PID {pid} (port 5000): {killError}");
+                    }
+                    else
+                    {
+                        Log($"Terminated process PID {pid} on port 5000");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log("Error terminating port 5000: " + ex.Message);
+            }
+        }
+
+        private void StartFrontend()
+        {
+            if (frontendProcess != null && !frontendProcess.HasExited)
+            {
+                Log("Frontend is already running.");
+                return;
+            }
+            string ip = GetLocalIPAddress();
+            string backendUrl = $"http://{ip}:5000";
+
+            // Update .env.local sebelum start frontend
+            var exeDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            if (exeDir == null)
+            {
+                Log("Gagal mendapatkan direktori aplikasi.");
+                SetFrontendStatus(false);
+                return;
+            }
+            var projectRoot = System.IO.Path.GetFullPath(System.IO.Path.Combine(exeDir, "..", "..", "..", ".."));
+            var envPath = System.IO.Path.Combine(projectRoot, ".env.local");
+            try
+            {
+                System.IO.File.WriteAllText(envPath, $"NEXT_PUBLIC_BACKEND_URL={backendUrl}\n");
+                Log($".env.local updated: NEXT_PUBLIC_BACKEND_URL={backendUrl}");
+            }
+            catch (Exception ex)
+            {
+                Log($"Gagal update .env.local: {ex.Message}");
+            }
+
+            frontendProcess = new Process();
+            frontendProcess.StartInfo.FileName = "cmd.exe";
+            frontendProcess.StartInfo.Arguments = "/c npm run dev";
+            frontendProcess.StartInfo.WorkingDirectory = projectRoot;
+            frontendProcess.StartInfo.UseShellExecute = false;
+            frontendProcess.StartInfo.RedirectStandardOutput = true;
+            frontendProcess.StartInfo.RedirectStandardError = true;
+            frontendProcess.StartInfo.CreateNoWindow = true;
+            // Tidak perlu set env var manual, Next.js akan baca dari .env.local
+
+            Log($"Frontend started with .env.local: NEXT_PUBLIC_BACKEND_URL={backendUrl}");
+            Log($"Frontend working directory: {frontendProcess.StartInfo.WorkingDirectory}");
+
+            frontendProcess.OutputDataReceived += (s, e) =>
+            {
+                if (e.Data != null)
+                {
+                    Dispatcher.Invoke(() => Log("Frontend stdout: " + e.Data));
+                }
+            };
+            frontendProcess.ErrorDataReceived += (s, e) =>
+            {
+                if (e.Data != null)
+                {
+                    Dispatcher.Invoke(() => Log("Frontend stderr: " + e.Data));
+                }
+            };
+            frontendProcess.Exited += (s, e) =>
+            {
+                try
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        Log("Frontend exited.");
+                        SetFrontendStatus(false);
+                        // Jangan pernah panggil Close() atau Shutdown() di sini
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.Invoke(() => Log($"Error in frontend Exited handler: {ex.Message}"));
+                }
+            };
+
+            frontendProcess.EnableRaisingEvents = true;
+            frontendProcess.Start();
+            frontendProcess.BeginOutputReadLine();
+            frontendProcess.BeginErrorReadLine();
+            SetFrontendStatus(true);
+            Log($"Frontend started with NEXT_PUBLIC_BACKEND_URL={backendUrl}");
+        }
+
+        private void StopFrontend()
+        {
+            if (frontendProcess != null)
+            {
+                try
+                {
+                    if (!frontendProcess.HasExited)
+                    {
+                        frontendProcess.Kill();
+                        Log("Frontend stopped (kill signal sent).");
+                    }
+                    else
+                    {
+                        Log("Frontend process already exited.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"Error stopping frontend: {ex.Message}");
+                }
+                SetFrontendStatus(false);
+                frontendProcess = null;
+            }
+            else
+            {
+                SetFrontendStatus(false);
+                Log("Frontend is not running.");
+            }
+            // Kill port 3000 dan 8000
+            foreach (var port in new[] {3000, 8000})
+            {
+                try
+                {
+                    var psi = new ProcessStartInfo("cmd.exe", $"/c netstat -ano | findstr :{port}")
+                    {
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+                    var proc = Process.Start(psi);
+                    string output = proc != null ? proc.StandardOutput.ReadToEnd() : string.Empty;
+                    if (proc != null) proc.WaitForExit();
+                    var lines = output.Split(new[] { System.Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var line in lines)
+                    {
+                        var parts = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        string pid = parts[parts.Length - 1];
+                        var killPsi = new ProcessStartInfo("taskkill", $"/PID {pid} /F")
+                        {
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                            UseShellExecute = false,
+                            CreateNoWindow = true
+                        };
+                        var killProc = Process.Start(killPsi);
+                        string killOutput = killProc != null ? killProc.StandardOutput.ReadToEnd() : string.Empty;
+                        string killError = killProc != null ? killProc.StandardError.ReadToEnd() : string.Empty;
+                        if (killProc != null) killProc.WaitForExit();
+                        if (!string.IsNullOrEmpty(killError))
+                        {
+                            Log($"Error killing PID {pid} (port {port}): {killError}");
+                        }
+                        else
+                        {
+                            Log($"Terminated process PID {pid} on port {port}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"Error terminating port {port}: " + ex.Message);
+                }
+            }
+        }
+
+        private void RestartBackend()
+        {
+            StopBackend();
+            StartBackend();
+        }
+
+        private void StartSimpleServer()
+        {
+            if (simpleServerProcess != null && !simpleServerProcess.HasExited)
+            {
+                Log("Simple server is already running.");
+                return;
+            }
+
+            simpleServerProcess = new Process();
+            simpleServerProcess.StartInfo.FileName = "node";
+            simpleServerProcess.StartInfo.Arguments = "start-server.js";
+            simpleServerProcess.StartInfo.WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            simpleServerProcess.StartInfo.UseShellExecute = false;
+            simpleServerProcess.StartInfo.RedirectStandardOutput = true;
+            simpleServerProcess.StartInfo.RedirectStandardError = true;
+            simpleServerProcess.StartInfo.CreateNoWindow = true;
+
+            simpleServerProcess.OutputDataReceived += (s, e) =>
+            {
+                if (e.Data != null)
+                {
+                    Dispatcher.Invoke(() => Log("SimpleServer stdout: " + e.Data));
+                }
+            };
+            simpleServerProcess.ErrorDataReceived += (s, e) =>
+            {
+                if (e.Data != null)
+                {
+                    Dispatcher.Invoke(() => Log("SimpleServer stderr: " + e.Data));
+                }
+            };
+            simpleServerProcess.Exited += (s, e) =>
+            {
+                Dispatcher.Invoke(() => Log("SimpleServer exited."));
+            };
+
+            simpleServerProcess.EnableRaisingEvents = true;
+            simpleServerProcess.Start();
+            simpleServerProcess.BeginOutputReadLine();
+            simpleServerProcess.BeginErrorReadLine();
+
+            Log("Simple server started.");
+        }
+
+        private void TerminatePort8000()
+        {
+            try
+            {
+                var psi = new ProcessStartInfo("cmd.exe", "/c netstat -ano | findstr :8000")
+                {
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                var proc = Process.Start(psi);
+                string output = proc != null ? proc.StandardOutput.ReadToEnd() : string.Empty;
+                if (proc != null) proc.WaitForExit();
+
+                var lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var line in lines)
+                {
+                    var parts = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    string pid = parts[parts.Length - 1];
+
+                    var killPsi = new ProcessStartInfo("taskkill", $"/PID {pid} /F")
+                    {
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+                    var killProc = Process.Start(killPsi);
+                    string killOutput = killProc != null ? killProc.StandardOutput.ReadToEnd() : string.Empty;
+                    string killError = killProc != null ? killProc.StandardError.ReadToEnd() : string.Empty;
+                    if (killProc != null) killProc.WaitForExit();
+
+                    if (!string.IsNullOrEmpty(killError))
+                    {
+                        Log($"Error killing PID {pid}: {killError}");
+                    }
+                    else
+                    {
+                        Log($"Terminated process PID {pid} on port 8000");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log("Error terminating port 8000: " + ex.Message);
+            }
+        }
+
+        private void Log(string message)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                LogTextBox.AppendText(message + Environment.NewLine);
+                LogTextBox.ScrollToEnd();
+            });
+        }
+
+        // Set status ke stopped jika proses exit
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            SetBackendStatus(false);
+            SetFrontendStatus(false);
+        }
+
+        private void KillPort5000Button_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "powershell.exe",
+                    Arguments = "netstat -ano | findstr :5000",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                var process = Process.Start(psi);
+                if (process != null)
+                {
+                    string output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit();
+
+                    var lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    var pids = new HashSet<string>();
+                    foreach (var line in lines)
+                    {
+                        var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (parts.Length >= 5)
+                        {
+                            pids.Add(parts[4]);
+                        }
+                    }
+
+                    if (pids.Count == 0)
+                    {
+                        Log("Tidak ada proses di port 5000.");
+                        return;
+                    }
+
+                    foreach (var pid in pids)
+                    {
+                        var killPsi = new ProcessStartInfo
+                        {
+                            FileName = "powershell.exe",
+                            Arguments = $"taskkill /PID {pid} /F",
+                            RedirectStandardOutput = true,
+                            UseShellExecute = false,
+                            CreateNoWindow = true
+                        };
+                        var killProcess = Process.Start(killPsi);
+                        if (killProcess != null)
+                        {
+                            string killOutput = killProcess.StandardOutput.ReadToEnd();
+                            killProcess.WaitForExit();
+                            Log($"taskkill /PID {pid} /F: {killOutput}");
+                        }
+                        else
+                        {
+                            Log($"Gagal menjalankan taskkill untuk PID {pid}.");
+                        }
+                    }
+                }
+                else
+                {
+                    Log("Gagal menjalankan perintah netstat/findstr.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"Gagal mematikan proses di port 5000: {ex.Message}");
+            }
+        }
+
+        private void RestartFrontend()
+        {
+            StopFrontend();
+            StartFrontend();
+        }
+    }
+}
