@@ -16,7 +16,13 @@ interface CurrencyValidationResult {
 }
 
 // Fungsi untuk mendapatkan tolerance berdasarkan range harga
-function getTolerance(price: number): number {
+function getTolerance(price: number, currency?: string): number {
+  // Special case untuk JPY
+  if (currency && currency.toUpperCase() === 'JPY') {
+    // JPY tolerance: ±5 (110.50 ± 5 = 105.50 - 115.50)
+    return 5;
+  }
+  
   if (price >= 10000) {
     // Harga puluhan ribu (USD, EURO, dll): ±100
     return 100;
@@ -69,7 +75,18 @@ function getCurrencyRanges(kursData: KursData[], selectedCurrency: string): { bu
 
   // Ambil semua harga buy yang valid
   const buyPrices = matchedRates
-    .map(rate => parseFloat(rate.buy.replace(/\./g, '').replace(/,/g, '.')))
+    .map(rate => {
+      let buyStr = rate.buy.trim();
+      
+      // Logika parsing berdasarkan mata uang
+      if (selectedCurrencyUpper === 'JPY') {
+        // JPY menggunakan format desimal: 110.50, 115.50
+        return parseFloat(buyStr);
+      } else {
+        // Mata uang lain menggunakan format ribuan: 15.250, 16.050
+        return parseFloat(buyStr.replace(/\./g, '').replace(/,/g, '.'));
+      }
+    })
     .filter(price => !isNaN(price) && price > 0);
     
   let buyRange: ValidationRange | null = null;
@@ -79,7 +96,7 @@ function getCurrencyRanges(kursData: KursData[], selectedCurrency: string): { bu
   if (buyPrices.length > 0) {
     const minBuy = Math.min(...buyPrices);
     const maxBuy = Math.max(...buyPrices);
-    const tolerance = getTolerance(maxBuy);
+    const tolerance = getTolerance(maxBuy, selectedCurrency);
     
     buyRange = {
       min: minBuy - tolerance,
