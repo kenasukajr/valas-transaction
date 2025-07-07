@@ -77,18 +77,27 @@ function getCurrencyRanges(kursData: KursData[], selectedCurrency: string): { bu
   const buyPrices = matchedRates
     .map(rate => {
       let buyStr = rate.buy.trim();
-      
-      // Logika parsing berdasarkan mata uang
       if (selectedCurrencyUpper === 'JPY') {
-        // JPY menggunakan format desimal: 110.50, 115.50
         return parseFloat(buyStr);
       } else {
-        // Mata uang lain menggunakan format ribuan: 15.250, 16.050
         return parseFloat(buyStr.replace(/\./g, '').replace(/,/g, '.'));
       }
     })
     .filter(price => !isNaN(price) && price > 0);
-    
+
+  // Ambil semua harga sell yang valid
+  const sellPrices = matchedRates
+    .map(rate => {
+      let sellStr = (rate.sell || '').trim();
+      if (!sellStr) return NaN;
+      if (selectedCurrencyUpper === 'JPY') {
+        return parseFloat(sellStr);
+      } else {
+        return parseFloat(sellStr.replace(/\./g, '').replace(/,/g, '.'));
+      }
+    })
+    .filter(price => !isNaN(price) && price > 0);
+
   let buyRange: ValidationRange | null = null;
   let sellRange: ValidationRange | null = null;
 
@@ -97,18 +106,20 @@ function getCurrencyRanges(kursData: KursData[], selectedCurrency: string): { bu
     const minBuy = Math.min(...buyPrices);
     const maxBuy = Math.max(...buyPrices);
     const tolerance = getTolerance(maxBuy, selectedCurrency);
-    
     buyRange = {
       min: minBuy - tolerance,
       max: maxBuy + tolerance
     };
-    
-    // Untuk sell range, gunakan logika yang sama dengan buy range
-    // Berdasarkan requirement: range selalu menggunakan min/max buy price
-    // Contoh USD: buy 15250-16050, range 15150-16150 untuk semua transaksi
+  }
+
+  // Hitung range berdasarkan harga sell (dari terkecil sampai terbesar + tolerance)
+  if (sellPrices.length > 0) {
+    const minSell = Math.min(...sellPrices);
+    const maxSell = Math.max(...sellPrices);
+    const tolerance = getTolerance(maxSell, selectedCurrency);
     sellRange = {
-      min: minBuy - tolerance,
-      max: maxBuy + tolerance
+      min: minSell - tolerance,
+      max: maxSell + tolerance
     };
   }
 
