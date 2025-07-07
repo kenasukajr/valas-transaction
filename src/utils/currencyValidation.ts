@@ -127,10 +127,9 @@ export function validateCurrencyRate(
   
   // Tentukan apakah ini buy atau sell berdasarkan jenis transaksi
   // BNB (Beli Nota Biasa) = Buy rate, BNS (Beli Nota Segar) = Sell rate
-  // Tetapi untuk range calculation, selalu gunakan buyRange untuk semua mata uang
   const isBuyTransaction = transactionType === 'BNB';
-  const targetRange = buyRange; // Selalu gunakan buy range seperti contoh USD
-  
+  const targetRange = isBuyTransaction ? buyRange : sellRange;
+
   if (!targetRange) {
     // Jika tidak ada data kurs, anggap valid
     return {
@@ -139,9 +138,9 @@ export function validateCurrencyRate(
       rateType: isBuyTransaction ? 'buy' : 'sell'
     };
   }
-  
+
   const isValid = enteredRate >= targetRange.min && enteredRate <= targetRange.max;
-  
+
   return {
     isValid,
     validRange: targetRange,
