@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test AHK Script Generation</title>
+</head>
+<body>
+    <h1>Test AHK Script dari semua halaman</h1>
+    
+    <h2>1. Test API (/api/generate-ahk)</h2>
+    <button onclick="testAPI()">Test API AHK</button>
+    <pre id="api-result"></pre>
+    
+    <h2>2. Test dari halaman utama (simulate)</h2>
+    <button onclick="testHomePage()">Test Home Page AHK</button>
+    <pre id="home-result"></pre>
+    
+    <script>
+        const testData = {
+            name: "John Doe",
+            address: "Jalan Test No. 123",
+            phone: "081234567890",
+            job: "Programmer", 
+            idNumber: "1234567890123456",
+            birthPlace: "Jakarta",
+            birthDate: "1990-01-15",
+            transactionType: "BNB"
+        };
+        
+        function formatDate(dateString) {
+            if (!dateString) return "";
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString;
+            const day = ("0" + date.getDate()).slice(-2);
+            const month = ("0" + (date.getMonth() + 1)).slice(-2);
+            const year = date.getFullYear();
+            return ` ${day}/${month}/${year}`;
+        }
+        
+        async function testAPI() {
+            try {
+                const response = await fetch('/api/generate-ahk', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(testData)
+                });
+                
+                if (response.ok) {
+                    const text = await response.text();
+                    document.getElementById('api-result').textContent = text;
+                } else {
+                    document.getElementById('api-result').textContent = 'Error: ' + response.status;
+                }
+            } catch (error) {
+                document.getElementById('api-result').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        function testHomePage() {
+            // Simulate generateAndDownloadAHK function from homepage
+            const formattedBirthDate = formatDate(testData.birthDate);
+            const truncatedAddress = testData.address;
+            
+            const ahkLines = []
+            ahkLines.push('IfWinExist, Data Prosesing PT Mulia Bumi Arta')
+            ahkLines.push('{')
+            ahkLines.push('    WinRestore, Data Prosesing PT Mulia Bumi Arta')
+            ahkLines.push('    WinActivate, Data Prosesing PT Mulia Bumi Arta')
+            ahkLines.push('    WinMaximize, Data Prosesing PT Mulia Bumi Arta')
+            ahkLines.push('}')
+            ahkLines.push('else')
+            ahkLines.push('{')
+            ahkLines.push('    MsgBox, 16, Error, Window "Data Prosesing PT Mulia Bumi Arta" tidak ditemukan. Pastikan program sudah berjalan.')
+            ahkLines.push('    ExitApp')
+            ahkLines.push('}')
+            ahkLines.push('')
+            ahkLines.push('Send, {Enter}')
+            ahkLines.push('Sleep, 500')
+            ahkLines.push('Send, {Enter}')
+            ahkLines.push('Sleep, 500')
+            ahkLines.push('')
+            ahkLines.push('data := {}')
+            ahkLines.push(`data["Nama Lengkap"] := "${testData.name || ''}"`)
+            ahkLines.push(`data["Alamat"] := "${truncatedAddress}"`)
+            ahkLines.push(`data["Nomor Telepon"] := "${testData.phone || ''}"`)
+            ahkLines.push(`data["Pekerjaan"] := "${testData.job || ''}"`)
+            ahkLines.push(`data["Nomor Identitas"] := "${testData.idNumber || ''}"`)
+            ahkLines.push(`data["Tempat Tanggal Lahir"] := "${testData.birthPlace || ''}${formattedBirthDate}"`)
+            ahkLines.push('')
+            ahkLines.push('TypeString(str) {')
+            ahkLines.push('    Loop Parse, str')
+            ahkLines.push('    {')
+            ahkLines.push('        Send %A_LoopField%')
+            ahkLines.push('        Sleep 0')
+            ahkLines.push('    }')
+            ahkLines.push('}')
+            ahkLines.push('')
+            ahkLines.push('keys := ["Nama Lengkap", "Alamat", "Nomor Telepon", "Pekerjaan", "Nomor Identitas", "Tempat Tanggal Lahir"]')
+            ahkLines.push('for index, key in keys')
+            ahkLines.push('{')
+            ahkLines.push('    TypeString(data[key])')
+            ahkLines.push('    Sleep 0')
+            ahkLines.push('    Send {Tab}')
+            ahkLines.push('    Sleep 0')
+            ahkLines.push('}')
+            ahkLines.push('Sleep 500')
+            ahkLines.push('FileDelete, %A_ScriptFullPath%')
+            ahkLines.push('ExitApp')
+
+            const ahkContent = ahkLines.join('\n');
+            document.getElementById('home-result').textContent = ahkContent;
+        }
+    </script>
+</body>
+</html>

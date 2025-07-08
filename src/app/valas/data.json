@@ -1,0 +1,11 @@
+[
+  ["KURS PT MULIA BUMI ARTA", "", "", "", "KURS PT MULIA BUMI ARTA", "", "", "", "KURS PT MULIA BUMI ARTA", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+  ["Jl Margo Utomo No 53 Yogyakarta", "", "", "", "Jl Margo Utomo No 53 Yogyakarta", "", "", "", "Jl Margo Utomo No 53 Yogyakarta", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+  [45838, 45838.7853125, 10, "", 45838, 45838.7853125, 10, "", 45838, 45838.7853125, 10, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+  ["", 45838.7853125, 10],
+  ["CURRENCY", "BUY", "SELL", "", "CURRENCY", "BUY", "SELL", "", "CURRENCY", "BUY", "SELL", "", "Penjelasan untuk USD", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+  ["USD New", 10000, 10250, "", "USD New", 10000, 10250, "", "USD New", 10000, 10250, "", "USD New   : usd pec 100 seri tahun 2017 dan setelahnya kondisi bagus mulus, tanpa noda, tanpa tekukan & lipatan", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+  ["USD 2nd", 10000, ""],
+  ["USD 5-50", 10000, ""]
+  // ... (data selanjutnya, paste dari file asli Anda)
+]

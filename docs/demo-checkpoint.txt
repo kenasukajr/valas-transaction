@@ -1,0 +1,12 @@
+# Demo File untuk Checkpoint (UPDATED)
+
+Ini adalah file demo untuk menunjukkan cara kerja checkpoint.
+
+Status: File DIMODIFIKASI - menunjukkan perubahan
+Waktu: 2025-07-05 (Updated)
+Tujuan: Demo checkpoint system
+
+## Cara Kerja Checkpoint:
+1. Buat perubahan di file-file project
+2. Jalankan checkpoint untuk simpan semua perubahan
+3. Bisa rollback ke checkpoint sebelumnya jika perlu

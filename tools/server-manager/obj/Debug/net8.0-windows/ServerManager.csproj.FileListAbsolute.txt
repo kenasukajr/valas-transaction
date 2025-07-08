@@ -1,0 +1,39 @@
+e:\Blackbox Versi 0.6\Server Manager\bin\Debug\net8.0-windows\ServerManager.exe
+e:\Blackbox Versi 0.6\Server Manager\bin\Debug\net8.0-windows\ServerManager.deps.json
+e:\Blackbox Versi 0.6\Server Manager\bin\Debug\net8.0-windows\ServerManager.runtimeconfig.json
+e:\Blackbox Versi 0.6\Server Manager\bin\Debug\net8.0-windows\ServerManager.dll
+e:\Blackbox Versi 0.6\Server Manager\bin\Debug\net8.0-windows\ServerManager.pdb
+e:\Blackbox Versi 0.6\Server Manager\obj\Debug\net8.0-windows\MainWindow.baml
+e:\Blackbox Versi 0.6\Server Manager\obj\Debug\net8.0-windows\MainWindow.g.cs
+e:\Blackbox Versi 0.6\Server Manager\obj\Debug\net8.0-windows\App.g.cs
+e:\Blackbox Versi 0.6\Server Manager\obj\Debug\net8.0-windows\ServerManager_MarkupCompile.cache
+e:\Blackbox Versi 0.6\Server Manager\obj\Debug\net8.0-windows\ServerManager.g.resources
+e:\Blackbox Versi 0.6\Server Manager\obj\Debug\net8.0-windows\ServerManager.GeneratedMSBuildEditorConfig.editorconfig
+e:\Blackbox Versi 0.6\Server Manager\obj\Debug\net8.0-windows\ServerManager.AssemblyInfoInputs.cache
+e:\Blackbox Versi 0.6\Server Manager\obj\Debug\net8.0-windows\ServerManager.AssemblyInfo.cs
+e:\Blackbox Versi 0.6\Server Manager\obj\Debug\net8.0-windows\ServerManager.csproj.CoreCompileInputs.cache
+e:\Blackbox Versi 0.6\Server Manager\obj\Debug\net8.0-windows\ServerManager.dll
+e:\Blackbox Versi 0.6\Server Manager\obj\Debug\net8.0-windows\refint\ServerManager.dll
+e:\Blackbox Versi 0.6\Server Manager\obj\Debug\net8.0-windows\ServerManager.pdb
+e:\Blackbox Versi 0.6\Server Manager\obj\Debug\net8.0-windows\ServerManager.genruntimeconfig.cache
+e:\Blackbox Versi 0.6\Server Manager\obj\Debug\net8.0-windows\ref\ServerManager.dll
+E:\Blackbox Versi 1.4.1\tools\server-manager\bin\Debug\net8.0-windows\ServerManager.exe
+E:\Blackbox Versi 1.4.1\tools\server-manager\bin\Debug\net8.0-windows\ServerManager.deps.json
+E:\Blackbox Versi 1.4.1\tools\server-manager\bin\Debug\net8.0-windows\ServerManager.runtimeconfig.json
+E:\Blackbox Versi 1.4.1\tools\server-manager\bin\Debug\net8.0-windows\ServerManager.dll
+E:\Blackbox Versi 1.4.1\tools\server-manager\bin\Debug\net8.0-windows\ServerManager.pdb
+E:\Blackbox Versi 1.4.1\tools\server-manager\obj\Debug\net8.0-windows\MainWindow.baml
+E:\Blackbox Versi 1.4.1\tools\server-manager\obj\Debug\net8.0-windows\MainWindow.g.cs
+E:\Blackbox Versi 1.4.1\tools\server-manager\obj\Debug\net8.0-windows\App.g.cs
+E:\Blackbox Versi 1.4.1\tools\server-manager\obj\Debug\net8.0-windows\ServerManager_MarkupCompile.cache
+E:\Blackbox Versi 1.4.1\tools\server-manager\obj\Debug\net8.0-windows\ServerManager.g.resources
+E:\Blackbox Versi 1.4.1\tools\server-manager\obj\Debug\net8.0-windows\ServerManager.GeneratedMSBuildEditorConfig.editorconfig
+E:\Blackbox Versi 1.4.1\tools\server-manager\obj\Debug\net8.0-windows\ServerManager.AssemblyInfoInputs.cache
+E:\Blackbox Versi 1.4.1\tools\server-manager\obj\Debug\net8.0-windows\ServerManager.AssemblyInfo.cs
+E:\Blackbox Versi 1.4.1\tools\server-manager\obj\Debug\net8.0-windows\ServerManager.csproj.CoreCompileInputs.cache
+E:\Blackbox Versi 1.4.1\tools\server-manager\obj\Debug\net8.0-windows\ServerManager.sourcelink.json
+E:\Blackbox Versi 1.4.1\tools\server-manager\obj\Debug\net8.0-windows\ServerManager.dll
+E:\Blackbox Versi 1.4.1\tools\server-manager\obj\Debug\net8.0-windows\refint\ServerManager.dll
+E:\Blackbox Versi 1.4.1\tools\server-manager\obj\Debug\net8.0-windows\ServerManager.pdb
+E:\Blackbox Versi 1.4.1\tools\server-manager\obj\Debug\net8.0-windows\ServerManager.genruntimeconfig.cache
+E:\Blackbox Versi 1.4.1\tools\server-manager\obj\Debug\net8.0-windows\ref\ServerManager.dll
