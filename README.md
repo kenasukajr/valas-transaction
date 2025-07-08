@@ -231,7 +231,24 @@ node test-validation.js
 
 ## 📋 Changelog
 
-### v1.4.1 (Latest)
+### v1.4.3 (Latest)
+- 🎉 **Complete BNS Payment Integration**: Production-ready workflow untuk Beli Nota Segar (BNS)
+- 🚀 **Payment Navigation Workflow**: Automated payment input setelah transaction completion
+- 🔧 **BNS vs BNB Differentiation**: Separate workflow handling untuk transaction types berbeda
+- ✨ **Enhanced AHK Generator**: Full support untuk BNS payment data processing
+- 🛠️ **Fixed BNS Navigation Logic**: Correct Enter press count setelah rate input
+- 📋 **Complete Test Coverage**: Single dan multi-transaction BNS scenarios
+- 🎯 **Production Ready**: All features tested dan validated untuk PT Mulia Bumi Arta
+
+### v1.4.2
+- 🌐 **Full Network Access**: Dapat diakses dari semua komputer dalam jaringan LAN
+- 🔧 **Fixed Loading Timeout**: Mengatasi masalah "Loading timeout" dengan Next.js proxy
+- 🎨 **Modern Transaction Display**: Tampilan transaksi dengan card design yang modern
+- 📊 **Rate Validation**: Improved kurs validation dengan notifikasi peringatan
+- 🛠️ **Upload/Paste Image**: Fixed gambar hilang saat nama tidak ada
+- 🔄 **Enhanced Navigation**: Better keyboard navigation dan arrow key support
+
+### v1.4.1
 - ✨ **UI Modal**: Redesign modal validasi dengan tema biru modern
 - 🎯 **UX Focus**: Perbaikan navigasi keyboard dan default focus
 - 🔧 **Z-Index Fix**: Perbaikan masalah overlay modal dengan header tabel
@@ -241,11 +258,6 @@ node test-validation.js
 - ✨ **Rate Validation**: Sistem validasi kurs otomatis dengan modal
 - 🎮 **Keyboard Navigation**: Dukungan navigasi keyboard lengkap
 - 🎨 **UI Enhancement**: Perbaikan antarmuka dan styling
-
-### v1.3.x
-- 🏦 **Kurs Integration**: Integrasi real-time dengan mbarate.net
-- 🎯 **Currency Highlighting**: Sistem highlighting mata uang aktif
-- 📊 **Transaction Types**: Dukungan BNB dan BNS
 
 ## 🤝 Kontribusi
 
@@ -270,4 +282,4 @@ Project ini menggunakan lisensi MIT. Lihat file `LICENSE` untuk detail lengkap.
 
 **Dibuat dengan ❤️ untuk memudahkan transaksi valas**
 
-*Version 1.4.1 - Smart Rate Validation System*
+*Version 1.4.3 - Complete BNS Payment Integration*

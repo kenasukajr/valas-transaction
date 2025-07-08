@@ -5,7 +5,7 @@ All notable changes to the Valas Transaction System project will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.3] - 2025-01-09
+## [1.4.3]
 
 ### 🎉 Major Features Added
 - **Complete BNS Payment Integration** - Production-ready workflow for Beli Nota Segar (BNS) transactions
@@ -108,7 +108,7 @@ node tests-archive/test-scripts/test-final-verification-bns-enter.js
 
 ---
 
-## [1.4.2] - 2024-12-15
+## [1.4.2]
 
 ### 🌐 Network & Performance Improvements
 - **Full Network Access** - Dapat diakses dari semua komputer dalam jaringan LAN
@@ -148,7 +148,7 @@ node tests-archive/test-scripts/test-final-verification-bns-enter.js
 
 ---
 
-## [1.4.1] - 2024-11-20
+## [1.4.1]
 
 ### 🏗️ Core Foundation
 - **Initial Next.js Setup** - Established Next.js 14 dengan TypeScript
@@ -182,7 +182,7 @@ node tests-archive/test-scripts/test-final-verification-bns-enter.js
 
 ---
 
-## [1.4.0] - 2024-10-30
+## [1.4.0]
 
 ### 🌟 Project Inception
 - **Project Created** - Initial project setup
@@ -194,7 +194,6 @@ node tests-archive/test-scripts/test-final-verification-bns-enter.js
 
 **Repository**: https://github.com/kenasukajr/valas-transaction  
 **Current Tag**: v1.4.3  
-**Release Date**: January 9, 2025  
 **Status**: Production Ready ✅
 
 ### 📈 Version History Summary
