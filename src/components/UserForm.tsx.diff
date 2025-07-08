@@ -1,0 +1,101 @@
+formData: any
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  savedTransactions: any[]
+  onAutofillSelect: (selected: any) => void
+  onTransactionTypeSelect?: (type: string) => void
+}) {
+  const [showSuggestions, setShowSuggestions] = useState<{[key: string]: boolean}>({
+    name: false,
+    address: false,
+    phone: false,
+    job: false,
+    idNumber: false,
+    birthPlace: false,
+    birthDate: false
+  })
+
+  const [filteredSuggestions, setFilteredSuggestions] = useState<{[key: string]: any[]}>({
+    name: [],
+    address: [],
+    phone: [],
+    job: [],
+    idNumber: [],
+    birthPlace: [],
+    birthDate: []
+  })
+=======
+export function UserForm({ formData, handleChange, savedTransactions, onAutofillSelect, onTransactionTypeSelect }: {
+  formData: any
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  savedTransactions: any[]
+  onAutofillSelect: (selected: any) => void
+  onTransactionTypeSelect?: (type: string) => void
+}) {
+  const [showSuggestions, setShowSuggestions] = useState<{[key: string]: boolean}>({
+    name: false,
+    address: false,
+    phone: false,
+    job: false,
+    idNumber: false,
+    birthPlace: false,
+    birthDate: false
+  })
+
+  const [filteredSuggestions, setFilteredSuggestions] = useState<{[key: string]: any[]}>({
+    name: [],
+    address: [],
+    phone: [],
+    job: [],
+    idNumber: [],
+    birthPlace: [],
+    birthDate: []
+  })
+
+  // State untuk menyimpan tipe transaksi yang dipilih
+  const [selectedTransactionType, setSelectedTransactionType] = useState<string | null>(null)
+>>>>>>> REPLACE
+
+<<<<<<< SEARCH
+      <div className="flex gap-2 mb-2">
+        <Button
+          type="button"
+          variant="default"
+          className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+          onClick={() => onTransactionTypeSelect && onTransactionTypeSelect("BNB")}
+        >
+          BNB
+        </Button>
+        <Button
+          type="button"
+          variant="default"
+          className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+          onClick={() => onTransactionTypeSelect && onTransactionTypeSelect("BNS")}
+        >
+          BNS
+        </Button>
+      </div>
+=======
+      <div className="flex gap-2 mb-2">
+        <Button
+          type="button"
+          variant="default"
+          className={`flex-1 text-white hover:bg-blue-700 ${selectedTransactionType === "BNB" ? "bg-black" : "bg-blue-600"}`}
+          onClick={() => {
+            setSelectedTransactionType("BNB")
+            if (onTransactionTypeSelect) onTransactionTypeSelect("BNB")
+          }}
+        >
+          BNB
+        </Button>
+        <Button
+          type="button"
+          variant="default"
+          className={`flex-1 text-white hover:bg-blue-700 ${selectedTransactionType === "BNS" ? "bg-black" : "bg-blue-600"}`}
+          onClick={() => {
+            setSelectedTransactionType("BNS")
+            if (onTransactionTypeSelect) onTransactionTypeSelect("BNS")
+          }}
+        >
+          BNS
+        </Button>
+      </div>

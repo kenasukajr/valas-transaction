@@ -1,0 +1,848 @@
+"use client"
+
+import { useState, useRef, useEffect } from "react"
+/* Temporarily replace custom Input component with native input for testing */
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { deduplicateByKey } from "@/lib/deduplicate"
+
+
+
+interface Nasabah {
+  idNumber: string;
+  name: string;
+  address: string;
+  phone: string;
+  job: string;
+  birthPlace: string;
+  birthDate: string;
+
+
+
+
+  transactionType?: string;
+  [key: string]: any;
+}
+
+export function UserForm(props: {
+  formData: Nasabah;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => void;
+  savedTransactions: Nasabah[];
+  onAutofillSelect: (selected: Nasabah) => void;
+  onTransactionTypeSelect?: (type: string) => void;
+  onValueChange: (name: string, value: string) => void;
+  onPreviewSuggestion?: (suggested: Nasabah | null) => void;
+  onForcePreviewSuggestion?: (suggested: Nasabah) => void;
+  jenisTransaksi: string;
+  setJenisTransaksi: (type: string) => void;
+}) {
+  const { formData, handleChange, savedTransactions, onAutofillSelect, onTransactionTypeSelect, onValueChange, onPreviewSuggestion, onForcePreviewSuggestion, jenisTransaksi, setJenisTransaksi } = props;
+    const [showSuggestions, setShowSuggestions] = useState<{[key: string]: boolean}>({
+      name: false,
+      address: false,
+      phone: false,
+      job: false,
+      idNumber: false,
+      birthPlace: false,
+      birthDate: false
+    });
+    // State: apakah field idNumber sedang fokus
+    const [idNumberFocused, setIdNumberFocused] = useState(false);
+  
+    const [filteredSuggestions, setFilteredSuggestions] = useState<{[key: string]: Nasabah[]}>({
+      name: [],
+      address: [],
+      phone: [],
+      job: [],
+      idNumber: [],
+      birthPlace: [],
+      birthDate: []
+    });
+
+    // Add flag to ignore reopening dropdown immediately after selection
+    const [ignoreNextShowSuggestions, setIgnoreNextShowSuggestions] = useState(false);
+  
+    // --- PATCH: Sync suggestion with formData.name/idNumber change ---
+    // Hilangkan preview gambar secara real-time jika suggestion hilang
+    // State untuk menyimpan selectedSuggestionName dan selectedSuggestionIdNumber
+    const [selectedSuggestionName, setSelectedSuggestionName] = useState<string | null>(null);
+    const [selectedSuggestionIdNumber, setSelectedSuggestionIdNumber] = useState<string | null>(null);
+
+  // Helper function untuk validasi preview suggestion
+  const shouldShowPreview = (input: string, data: any[], field: 'name' | 'idNumber') => {
+    if (!input || input.trim().length === 0) return null;
+    
+    const inputTrimmed = input.trim();
+    const inputUpper = inputTrimmed.toUpperCase();
+    
+    // Untuk idNumber: minimal 11 digit sama atau exact match
+    if (field === 'idNumber') {
+      // Jika kurang dari 11 digit, jangan tampilkan preview
+      if (inputTrimmed.length < 11) return null;
+      
+      // Cari exact match terlebih dahulu
+      const exactMatch = data.find(tx => {
+        const fieldValue = tx.idNumber;
+        return fieldValue && fieldValue.trim() === inputTrimmed;
+      });
+      if (exactMatch) return exactMatch;
+      
+      // Jika tidak exact match, cek minimal 11 digit sama
+      const partialMatch = data.find(tx => {
+        const fieldValue = tx.idNumber;
+        return fieldValue && fieldValue.trim().startsWith(inputTrimmed);
+      });
+      return partialMatch || null;
+    }
+    
+    // Untuk name: cari exact match terlebih dahulu
+    const exactMatch = data.find(tx => {
+      const fieldValue = tx.name;
+      return fieldValue && fieldValue.trim().toUpperCase() === inputUpper;
+    });
+    if (exactMatch) return exactMatch;
+    
+    // Untuk name: cari prefix match yang ketat (word boundary)
+    const prefixMatch = data.find(tx => {
+      const fieldValue = tx.name;
+      if (!fieldValue) return false;
+      
+      const nameUpper = fieldValue.trim().toUpperCase();
+      const words = nameUpper.split(' ');
+      const inputWords = inputUpper.split(' ');
+      
+      // Jika input hanya 1 kata, cek apakah kata pertama dari nama dimulai dengan input
+      if (inputWords.length === 1) {
+        return words[0] && words[0].startsWith(inputWords[0]);
+      }
+      
+      // Jika input lebih dari 1 kata, cek setiap kata secara berurutan
+      if (inputWords.length > words.length) return false;
+      
+      for (let i = 0; i < inputWords.length; i++) {
+        if (i === inputWords.length - 1) {
+          // Kata terakhir dari input bisa partial match
+          if (!words[i] || !words[i].startsWith(inputWords[i])) {
+            return false;
+          }
+        } else {
+          // Kata-kata sebelumnya harus exact match
+          if (!words[i] || words[i] !== inputWords[i]) {
+            return false;
+          }
+        }
+      }
+      
+      return true;
+    });
+    
+    return prefixMatch || null;
+  };
+
+  // PATCH: Only show name suggestion if field is focused
+    const [nameFocused, setNameFocused] = useState(false);
+    useEffect(() => {
+      const name = "name";
+      if (selectedSuggestionName && formData.name.trim().toUpperCase() === selectedSuggestionName.trim().toUpperCase()) {
+        setShowSuggestions(prev => ({ ...prev, [name]: false }));
+        setHighlightedIndex(prev => ({ ...prev, [name]: -1 }));
+        // Update preview menggunakan helper function
+        if (onPreviewSuggestion) {
+          const validPreview = shouldShowPreview(formData.name, savedTransactions, 'name');
+          onPreviewSuggestion(validPreview);
+        }
+        return;
+      }
+      if (ignoreNextShowSuggestions) {
+        setIgnoreNextShowSuggestions(false);
+        return;
+      }
+      if (formData.name && formData.name.trim().length > 0) {
+        const capitalizedValue = formData.name.trim().toUpperCase();
+        
+        // PERBAIKAN: Gunakan filtering yang konsisten dengan shouldShowPreview
+        let filtered = savedTransactions.filter(tx => {
+          if (!tx.name) return false;
+          
+          // Gunakan logika yang sama dengan shouldShowPreview
+          const nameUpper = tx.name.trim().toUpperCase();
+          const words = nameUpper.split(' ');
+          const inputWords = capitalizedValue.split(' ');
+          
+          // Exact match
+          if (nameUpper === capitalizedValue) return true;
+          
+          // Prefix match dengan word boundary
+          if (inputWords.length === 1) {
+            return words[0] && words[0].startsWith(inputWords[0]);
+          }
+          
+          if (inputWords.length > words.length) return false;
+          
+          for (let i = 0; i < inputWords.length; i++) {
+            if (i === inputWords.length - 1) {
+              // Kata terakhir bisa partial match
+              if (!words[i] || !words[i].startsWith(inputWords[i])) {
+                return false;
+              }
+            } else {
+              // Kata sebelumnya harus exact match
+              if (!words[i] || words[i] !== inputWords[i]) {
+                return false;
+              }
+            }
+          }
+          
+          return true;
+        });
+        // Deduplicate by name+idNumber
+        const seen = new Set();
+        filtered = filtered.filter(item => {
+          const key = item.name + "|" + item.idNumber;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        setFilteredSuggestions(prev => ({ ...prev, [name]: filtered }));
+        setShowSuggestions(prev => ({ ...prev, [name]: filtered.length > 0 && nameFocused }));
+        setHighlightedIndex(prev => ({ ...prev, [name]: filtered.length > 0 ? 0 : -1 }));
+        
+        // PERBAIKAN: Gunakan helper function untuk konsistensi dan validasi ketat
+        if (onPreviewSuggestion) {
+          const validPreview = shouldShowPreview(formData.name, savedTransactions, 'name');
+          console.log(`🔍 REALTIME: Input="${formData.name}" → Preview="${validPreview ? validPreview.name : 'NULL'}" → Calling onPreviewSuggestion`);
+          onPreviewSuggestion(validPreview);
+        }
+      } else {
+        setFilteredSuggestions(prev => ({ ...prev, [name]: [] }));
+        setShowSuggestions(prev => ({ ...prev, [name]: false }));
+        setHighlightedIndex(prev => ({ ...prev, [name]: -1 }));
+        if (onPreviewSuggestion) {
+          onPreviewSuggestion(null);
+        }
+      }
+    }, [formData.name, savedTransactions, onPreviewSuggestion, ignoreNextShowSuggestions, selectedSuggestionName, nameFocused]);
+
+    // PATCH: Sync suggestion with formData.idNumber change and selectedSuggestionIdNumber (single effect only)
+    useEffect(() => {
+      const idNumber = "idNumber";
+      if (ignoreNextShowSuggestions) {
+        setIgnoreNextShowSuggestions(false);
+        setShowSuggestions(prev => ({ ...prev, [idNumber]: false }));
+        setHighlightedIndex(prev => ({ ...prev, [idNumber]: -1 }));
+        return;
+      }
+      if (formData.idNumber && formData.idNumber.trim().length > 0) {
+        const idVal = formData.idNumber.trim();
+        let filtered = savedTransactions.filter(tx =>
+          tx.idNumber && tx.idNumber.trim().includes(idVal)
+        );
+        filtered = deduplicateByKey(filtered, "idNumber");
+        setFilteredSuggestions(prev => ({ ...prev, [idNumber]: filtered }));
+        // Hanya show dropdown jika field idNumber sedang fokus
+        setShowSuggestions(prev => ({ ...prev, [idNumber]: filtered.length > 0 && idNumberFocused }));
+        setHighlightedIndex(prev => ({ ...prev, [idNumber]: filtered.length > 0 ? 0 : -1 }));
+        
+        // PERBAIKAN: Gunakan helper function untuk konsistensi
+        if (onPreviewSuggestion && filtered.length > 0 && showSuggestions.idNumber) {
+          const validPreview = shouldShowPreview(formData.idNumber, savedTransactions, 'idNumber');
+          onPreviewSuggestion(validPreview);
+        } else if (onPreviewSuggestion) {
+          onPreviewSuggestion(null);
+        }
+      } else {
+        setFilteredSuggestions(prev => ({ ...prev, [idNumber]: [] }));
+        setShowSuggestions(prev => ({ ...prev, [idNumber]: false }));
+        setHighlightedIndex(prev => ({ ...prev, [idNumber]: -1 }));
+        if (onPreviewSuggestion) {
+          onPreviewSuggestion(null);
+        }
+      }
+    }, [formData.idNumber, savedTransactions, onPreviewSuggestion, showSuggestions.idNumber, ignoreNextShowSuggestions, idNumberFocused]);
+  
+    // State for highlighted suggestion index per field
+    const [highlightedIndex, setHighlightedIndex] = useState<{[key: string]: number}>({});
+  
+    // Track selected suggestion for name field (moved to top, only declare once!)
+  
+    // Fungsi untuk memperbarui formData dengan jenis transaksi
+    const updateTransactionTypeInFormData = (type: string) => {
+      if (handleChange) {
+        // Membuat event palsu untuk memperbarui formData
+        const event = {
+          target: {
+            name: "transactionType",
+            value: type
+          }
+        } as React.ChangeEvent<HTMLInputElement>
+        handleChange(event)
+      }
+    }
+  
+    // Create refs for each dropdown suggestion container
+    const dropdownRefs = {
+      idNumber: useRef<HTMLUListElement>(null),
+      name: useRef<HTMLUListElement>(null),
+      address: useRef<HTMLUListElement>(null),
+      phone: useRef<HTMLUListElement>(null),
+      job: useRef<HTMLUListElement>(null),
+      birthPlace: useRef<HTMLUListElement>(null),
+      birthDate: useRef<HTMLUListElement>(null),
+    }
+  
+    // Add ref for the entire form container
+    const formRef = useRef<HTMLFormElement>(null)
+  
+    useEffect(() => {
+      function handleClickOutside(event: MouseEvent) {
+        // Close dropdowns if click is outside the entire form
+        if (formRef.current && !formRef.current.contains(event.target as Node)) {
+          setShowSuggestions({
+            name: false,
+            address: false,
+            phone: false,
+            job: false,
+            idNumber: false,
+            birthPlace: false,
+            birthDate: false
+          })
+        }
+      }
+  
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside)
+      }
+    }, [])
+  
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      
+      // Auto kapital untuk SEMUA field kecuali birthDate
+      let autoValue = value;
+      if (name !== "birthDate") {
+        autoValue = value.toUpperCase();
+      }
+      
+      onValueChange(name, autoValue);
+
+      // PATCH: Reset selectedSuggestionName if user edits name field
+      if (name === 'name') {
+        setSelectedSuggestionName(null);
+      }
+      // PATCH: Reset selectedSuggestionIdNumber if user edits idNumber field
+      if (name === 'idNumber') {
+        setSelectedSuggestionIdNumber(null);
+      }
+    }
+  
+    const handleSuggestionClick = (field: string, selected: any) => {
+      // Gabungkan data autofill dengan jenis transaksi yang sudah dipilih
+      const mergedData = {
+        ...selected,
+        transactionType: jenisTransaksi || formData.transactionType || ""
+      }
+      // PATCH: Update preview immediately on suggestion click (parent)
+      if (onForcePreviewSuggestion) {
+        onForcePreviewSuggestion(mergedData);
+      }
+      if (onPreviewSuggestion) {
+        onPreviewSuggestion(mergedData);
+      }
+      // Close dropdown immediately after selection
+      setShowSuggestions(prev => ({ ...prev, [field]: false }))
+      setHighlightedIndex(prev => ({ ...prev, [field]: -1 }))
+      setShowSuggestions({
+        name: false,
+        address: false,
+        phone: false,
+        job: false,
+        idNumber: false,
+        birthPlace: false,
+        birthDate: false
+      });
+      setHighlightedIndex({});
+      // Set flag to ignore reopening dropdown immediately after selection
+      setIgnoreNextShowSuggestions(true);
+      setTimeout(() => {
+        onAutofillSelect(mergedData)
+        // --- PATCH: After selecting suggestion, move focus to next field ---
+        // Cari elemen input berikutnya setelah field yang dipilih
+        const form = formRef.current;
+        if (form) {
+          const focusable = Array.from(form.querySelectorAll('input,textarea,select,button'))
+            .filter(el => (el as HTMLElement).tabIndex !== -1 && !(el as HTMLInputElement).disabled && (el as HTMLElement).offsetParent !== null);
+          // Temukan index field aktif
+          const active = form.querySelector(`[name='${field}']`);
+          const idx = focusable.indexOf(active as HTMLElement);
+          let nextIdx = idx + 1;
+          while (nextIdx < focusable.length && (focusable[nextIdx] as HTMLElement).tagName === 'BUTTON') {
+            nextIdx++;
+          }
+          if (idx > -1 && nextIdx < focusable.length) {
+            (focusable[nextIdx] as HTMLElement).focus();
+          }
+        }
+      }, 80);
+
+      // Pastikan state selectedTransactionType sinkron dengan formData
+      if (mergedData.transactionType !== jenisTransaksi) {
+        setJenisTransaksi(mergedData.transactionType)
+      }
+
+      // PATCH: Set selectedSuggestionName/IdNumber when user selects a suggestion
+      if (field === 'name') {
+        setSelectedSuggestionName(selected.name || null);
+      }
+      if (field === 'idNumber') {
+        setSelectedSuggestionIdNumber(selected.idNumber || null);
+      }
+    }
+  
+    // Handler untuk Enter: jika tidak sedang memilih suggestion, pindah ke field berikutnya
+    const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+      const field = (e.target as HTMLInputElement).name;
+      
+      // Handler untuk navigasi antar field dengan Arrow Keys
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        // Jika sedang ada dropdown suggestion terbuka, biarkan default behavior
+        if (showSuggestions[field] && filteredSuggestions[field]?.length > 0) {
+          return;
+        }
+        
+        e.preventDefault();
+        const form = formRef.current;
+        if (form) {
+          const focusable = Array.from(form.querySelectorAll('input,textarea,select'))
+            .filter(el => (el as HTMLElement).tabIndex !== -1 && !(el as HTMLInputElement).disabled && (el as HTMLElement).offsetParent !== null);
+          const currentIdx = focusable.indexOf(e.target as HTMLElement);
+          
+          if (e.key === 'ArrowRight' && currentIdx < focusable.length - 1) {
+            // Pindah ke field berikutnya
+            (focusable[currentIdx + 1] as HTMLElement).focus();
+          } else if (e.key === 'ArrowLeft' && currentIdx > 0) {
+            // Pindah ke field sebelumnya
+            (focusable[currentIdx - 1] as HTMLElement).focus();
+          }
+        }
+        return;
+      }
+      
+      // Handler untuk navigasi Arrow Up/Down pada input tanggal lahir
+      if (field === 'birthDate' && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+        // Jika input tanggal kosong, set ke tanggal hari ini
+        if (!formData.birthDate) {
+          e.preventDefault();
+          const today = new Date();
+          const todayStr = today.toISOString().split('T')[0];
+          onValueChange('birthDate', todayStr);
+          return;
+        }
+        
+        // Jika sudah ada tanggal, tambah/kurangi 1 hari
+        e.preventDefault();
+        const currentDate = new Date(formData.birthDate);
+        if (!isNaN(currentDate.getTime())) {
+          if (e.key === 'ArrowUp') {
+            currentDate.setDate(currentDate.getDate() + 1);
+          } else {
+            currentDate.setDate(currentDate.getDate() - 1);
+          }
+          const newDateStr = currentDate.toISOString().split('T')[0];
+          onValueChange('birthDate', newDateStr);
+        }
+        return;
+      }
+      
+      // PATCH: Always handle Enter for all fields, not just when suggestion is open
+      if (e.key === 'Enter') {
+        setShowSuggestions(prev => ({ ...prev, [field]: false }));
+        setHighlightedIndex(prev => ({ ...prev, [field]: -1 }));
+        
+        // PERBAIKAN: Hanya clear preview suggestion jika input saat ini tidak match dengan data apapun
+        // Jangan clear jika user sedang pindah ke tombol Lanjut dengan data yang valid
+        if (onPreviewSuggestion && (field === 'name' || field === 'idNumber')) {
+          const currentInput = field === 'name' ? formData.name : formData.idNumber;
+          const validPreview = shouldShowPreview(currentInput, savedTransactions, field as 'name' | 'idNumber');
+          if (!validPreview) {
+            onPreviewSuggestion(null);
+          }
+        }
+        
+        // Special case: jika di field birthDate, fokus ke tombol Lanjut
+        if (field === 'birthDate') {
+          e.preventDefault();
+          setTimeout(() => {
+            const lanjutButton = document.getElementById('lanjut-button');
+            if (lanjutButton) {
+              lanjutButton.focus();
+            }
+          }, 100);
+          return;
+        }
+        
+        const form = formRef.current;
+        if (form) {
+          const focusable = Array.from(form.querySelectorAll('input,textarea,select,button'))
+            .filter(el => (el as HTMLElement).tabIndex !== -1 && !(el as HTMLInputElement).disabled && (el as HTMLElement).offsetParent !== null);
+          // PATCH: skip button dan cari field input berikutnya
+          const idx = focusable.indexOf(e.target as HTMLElement);
+          let nextIdx = idx + 1;
+          while (nextIdx < focusable.length && (focusable[nextIdx] as HTMLElement).tagName === 'BUTTON') {
+            nextIdx++;
+          }
+          if (idx > -1 && nextIdx < focusable.length) {
+            (focusable[nextIdx] as HTMLElement).focus();
+            e.preventDefault();
+          }
+        }
+        return;
+      }
+      if (showSuggestions[field] && filteredSuggestions[field]?.length > 0) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setHighlightedIndex(prev => {
+            const max = filteredSuggestions[field].length - 1;
+            const next = prev[field] === undefined || prev[field] < 0 ? 0 : Math.min(prev[field] + 1, max);
+            // Hanya update preview jika suggestion valid
+            if (onPreviewSuggestion && filteredSuggestions[field][next]) {
+              const currentInput = field === 'name' ? formData.name : formData.idNumber;
+              const validPreview = shouldShowPreview(currentInput, savedTransactions, field as 'name' | 'idNumber');
+              if (validPreview && validPreview === filteredSuggestions[field][next]) {
+                onPreviewSuggestion(filteredSuggestions[field][next]);
+              } else {
+                onPreviewSuggestion(null);
+              }
+            }
+            return { ...prev, [field]: next };
+          });
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setHighlightedIndex(prev => {
+            const max = filteredSuggestions[field].length - 1;
+            const next = prev[field] === undefined || prev[field] <= 0 ? 0 : prev[field] - 1;
+            // Hanya update preview jika suggestion valid
+            if (onPreviewSuggestion && filteredSuggestions[field][next]) {
+              const currentInput = field === 'name' ? formData.name : formData.idNumber;
+              const validPreview = shouldShowPreview(currentInput, savedTransactions, field as 'name' | 'idNumber');
+              if (validPreview && validPreview === filteredSuggestions[field][next]) {
+                onPreviewSuggestion(filteredSuggestions[field][next]);
+              } else {
+                onPreviewSuggestion(null);
+              }
+            }
+            return { ...prev, [field]: next };
+          });
+        } else if (e.key === 'Escape') {
+          setShowSuggestions(prev => ({ ...prev, [field]: false }));
+          setHighlightedIndex(prev => ({ ...prev, [field]: -1 }));
+          if (onPreviewSuggestion) onPreviewSuggestion(null);
+        } else if (e.key === 'Tab') {
+          // PATCH: Tab: tutup dropdown dan biarkan browser handle pindah field
+          setShowSuggestions(prev => ({ ...prev, [field]: false }));
+          setHighlightedIndex(prev => ({ ...prev, [field]: -1 }));
+          if (onPreviewSuggestion) onPreviewSuggestion(null);
+        } else if (e.key === 'Enter') {
+          // PATCH: Enter hanya untuk pindah field, JANGAN pilih suggestion
+          setShowSuggestions(prev => ({ ...prev, [field]: false }));
+          setHighlightedIndex(prev => ({ ...prev, [field]: -1 }));
+          if (onPreviewSuggestion) onPreviewSuggestion(null);
+          // Biarkan handler Enter di form yang memindahkan fokus ke field berikutnya
+        }
+      }
+    };
+  
+    // PATCH: Always close dropdown on blur (after short delay to allow click)
+    const handleInputBlur = (field: string) => {
+      setTimeout(() => {
+        setShowSuggestions(prev => ({ ...prev, [field]: false }));
+        setHighlightedIndex(prev => ({ ...prev, [field]: -1 }));
+        // PATCH: Always clear preview image on blur if not selecting suggestion
+        if (onPreviewSuggestion) onPreviewSuggestion(null);
+        // PATCH: Reset selectedSuggestionName/IdNumber on blur so dropdown will not reopen
+        if (field === 'name') {
+          setSelectedSuggestionName(null);
+        }
+        if (field === 'idNumber') {
+          setSelectedSuggestionIdNumber(null);
+        }
+      }, 120);
+    }
+  
+  const isDisabled = !jenisTransaksi;
+  
+  // Sync jenisTransaksi dengan formData.transactionType
+  useEffect(() => {
+    if (jenisTransaksi && jenisTransaksi !== formData.transactionType) {
+      onValueChange("transactionType", jenisTransaksi);
+    }
+  }, [jenisTransaksi]);
+  
+  return (
+    <form ref={formRef} className="space-y-4" onKeyDown={handleFormKeyDown}>
+      <div className="flex gap-2 mb-2">
+        <Button
+          type="button"
+          variant="default"
+          className={`flex-1 text-white hover:bg-blue-700 ${jenisTransaksi === "BNB" ? "bg-black" : "bg-blue-600"}`}
+          onClick={() => {
+            setJenisTransaksi("BNB");
+            onValueChange("transactionType", "BNB");
+            if (onTransactionTypeSelect) onTransactionTypeSelect("BNB");
+          }}
+        >
+          BNB
+        </Button>
+        <Button
+          type="button"
+          variant="default"
+          className={`flex-1 text-white hover:bg-blue-700 ${jenisTransaksi === "BNS" ? "bg-black" : "bg-blue-600"}`}
+          onClick={() => {
+            setJenisTransaksi("BNS");
+            onValueChange("transactionType", "BNS");
+            if (onTransactionTypeSelect) onTransactionTypeSelect("BNS");
+          }}
+        >
+          BNS
+        </Button>
+      </div>
+      <div className="space-y-4">
+        <div className="relative w-full flex items-center gap-0">
+          <Label htmlFor="transactionType" className="w-40 text-right">Jenis Transaksi</Label>
+          <input
+            id="transactionType"
+            name="transactionType"
+            type="text"
+            value={jenisTransaksi || ""}
+            onChange={handleInputChange}
+            required
+            placeholder="Masukkan jenis transaksi"
+            autoComplete="off"
+            disabled
+            className={`flex-1 text-black border-2 border-black rounded px-2 py-1 shadow-md cursor-not-allowed
+              ${jenisTransaksi === 'BNB' ? 'bg-green-200 border-green-500' : ''}
+              ${jenisTransaksi === 'BNS' ? 'bg-red-200 border-red-500' : ''}
+              ${!jenisTransaksi ? 'bg-gray-200' : ''}`}
+          />
+        </div>
+        <div className="w-full flex items-center">
+          <Label htmlFor="name" className="w-40 text-right gap-2">Nama Lengkap</Label>
+          <div className="relative flex-1">
+            <input
+              id="name"
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleInputChange}
+              onFocus={() => setNameFocused(true)}
+              onBlur={() => { setNameFocused(false); handleInputBlur('name'); }}
+              required
+              placeholder="Masukkan nama lengkap"
+              autoComplete="off"
+              className={`w-full border-2 border-black rounded px-2 py-1 shadow-md ${isDisabled ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+              disabled={isDisabled}
+            />
+            {showSuggestions.name && filteredSuggestions.name.length > 0 && !isDisabled && (
+              <ul
+                ref={dropdownRefs.name}
+                className="border border-gray-300 rounded mt-1 max-h-40 overflow-auto bg-white z-10 absolute left-0 w-full"
+              >
+              {filteredSuggestions.name.map((suggestion, index) => (
+                <li
+                  key={index}
+                  className={`px-2 py-1 cursor-pointer hover:bg-gray-200 ${highlightedIndex.name === index ? 'bg-blue-100' : ''}`}
+                  onMouseEnter={() => {
+                    setHighlightedIndex(prev => ({ ...prev, name: index }));
+                    // Hanya tampilkan preview jika valid sesuai shouldShowPreview
+                    const validPreview = shouldShowPreview(formData.name, savedTransactions, 'name');
+                    if (validPreview && validPreview === suggestion) {
+                      if (onPreviewSuggestion) onPreviewSuggestion(suggestion);
+                    } else {
+                      if (onPreviewSuggestion) onPreviewSuggestion(null);
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    setHighlightedIndex(prev => ({ ...prev, name: -1 }));
+                    if (onPreviewSuggestion) onPreviewSuggestion(null);
+                  }}
+                  onMouseDown={() => handleSuggestionClick('name', suggestion)}
+                >
+                  {suggestion.name}
+                </li>
+              ))}
+            </ul>
+          )}
+          </div>
+        </div>
+        <div className="relative w-full flex items-center">
+          <Label htmlFor="address" className="w-40 text-right gap-2">Alamat</Label>
+          <textarea
+            id="address"
+            name="address"
+            value={formData.address}
+            onChange={(e) => {
+              const { name, value } = e.target;
+              // Auto kapital untuk alamat
+              const autoValue = value.toUpperCase();
+              onValueChange(name, autoValue);
+            }}
+            onBlur={() => handleInputBlur('address')}
+            required
+            placeholder="Masukkan alamat lengkap"
+            autoComplete="off"
+            rows={2}
+            className={`flex-1 border-2 border-black rounded px-2 py-1 shadow-md resize-none ${isDisabled ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+            disabled={isDisabled}
+          />
+        </div>
+        <div className="flex gap-4">
+          {/* Nomor Telepon: label left, input aligned with pekerjaan input */}
+          <div className="flex-1 flex flex-col justify-end">
+            <div style={{ height: '1.75rem' }}></div> {/* Spacer to match Pekerjaan label height */}
+            <div className="flex items-center w-full">
+              <Label htmlFor="phone" className="w-40 text-right gap-2">Nomor Telepon</Label>
+              <input
+                id="phone"
+                name="phone"
+                type="text"
+                value={formData.phone}
+                onChange={handleInputChange}
+                onBlur={() => handleInputBlur('phone')}
+                required
+                placeholder="Masukkan nomor telepon"
+                autoComplete="off"
+                className={`flex-1 border-2 border-black rounded px-2 py-1 shadow-md ${isDisabled ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+                disabled={isDisabled}
+              />
+            </div>
+          </div>
+          {/* Pekerjaan: label above, input below */}
+          <div className="flex-1 flex flex-col gap-1 justify-end">
+            <Label htmlFor="job" className="mb-1">Pekerjaan</Label>
+            <input
+              id="job"
+              name="job"
+              type="text"
+              value={formData.job}
+              onChange={handleInputChange}
+              onBlur={() => handleInputBlur('job')}
+              required
+              placeholder="Masukkan pekerjaan"
+              autoComplete="off"
+              className={`w-full border-2 border-black rounded px-2 py-1 shadow-md ${isDisabled ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+              disabled={isDisabled}
+            />
+          </div>
+        </div>
+        <div className="w-full flex items-center">
+          <Label htmlFor="idNumber" className="w-40 text-right gap-2">Nomor Identitas</Label>
+          <div className="relative flex-1">
+            <input
+              id="idNumber"
+              name="idNumber"
+              type="text"
+              value={formData.idNumber}
+              onChange={handleInputChange}
+              onFocus={() => setIdNumberFocused(true)}
+              onBlur={() => { setIdNumberFocused(false); handleInputBlur('idNumber'); }}
+              required
+              placeholder="Masukkan nomor identitas"
+              autoComplete="off"
+              className={`w-full border-2 border-black rounded px-2 py-1 shadow-md ${isDisabled ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+              disabled={isDisabled}
+            />
+            {showSuggestions.idNumber && filteredSuggestions.idNumber.length > 0 && !isDisabled && (
+              <ul
+                ref={dropdownRefs.idNumber}
+                className="border border-gray-300 rounded mt-1 max-h-40 overflow-auto bg-white z-10 absolute left-0 w-full"
+              >
+              {filteredSuggestions.idNumber.map((suggestion, index) => (
+                <li
+                  key={index}
+                  className={`px-2 py-1 cursor-pointer hover:bg-gray-200 ${highlightedIndex.idNumber === index ? 'bg-blue-100' : ''}`}
+                  onMouseEnter={() => {
+                    setHighlightedIndex(prev => ({ ...prev, idNumber: index }));
+                    // Hanya tampilkan preview jika valid sesuai shouldShowPreview
+                    const validPreview = shouldShowPreview(formData.idNumber, savedTransactions, 'idNumber');
+                    if (validPreview && validPreview === suggestion) {
+                      if (onPreviewSuggestion) onPreviewSuggestion(suggestion);
+                    } else {
+                      if (onPreviewSuggestion) onPreviewSuggestion(null);
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    setHighlightedIndex(prev => ({ ...prev, idNumber: -1 }));
+                    if (onPreviewSuggestion) onPreviewSuggestion(null);
+                  }}
+                  onMouseDown={() => handleSuggestionClick('idNumber', suggestion)}
+                >
+                  {suggestion.idNumber}
+                </li>
+              ))}
+            </ul>
+          )}
+          </div>
+        </div>
+        <div className="flex gap-4">
+          {/* Tempat Lahir: label left, input right, vertically centered */}
+          <div className="flex-1 flex flex-col justify-end">
+            <div style={{ height: '1.75rem' }}></div> {/* Spacer to match Tanggal Lahir label height */}
+            <div className="flex items-center w-full">
+              <Label htmlFor="birthPlace" className="w-40 text-right gap-2">Tempat Lahir</Label>
+              <input
+                id="birthPlace"
+                name="birthPlace"
+                type="text"
+                value={formData.birthPlace}
+                onChange={handleInputChange}
+                onBlur={() => handleInputBlur('birthPlace')}
+                required
+                placeholder="Masukkan tempat lahir"
+                autoComplete="off"
+                className={`flex-1 border-2 border-black rounded px-2 py-1 shadow-md ${isDisabled ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+                disabled={isDisabled}
+              />
+            </div>
+          </div>
+          {/* Tanggal Lahir: label above, input below */}
+          <div className="flex-1 flex flex-col gap-1 justify-end">
+            <Label htmlFor="birthDate" className="mb-1">Tanggal Lahir</Label>
+            <input
+              id="birthDate"
+              name="birthDate"
+              type="date"
+              value={formData.birthDate}
+              onChange={handleInputChange}
+              onBlur={() => handleInputBlur('birthDate')}
+              onKeyDown={(e) => {
+                // Tambahan navigasi khusus untuk input tanggal
+                if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                  // Biarkan handleFormKeyDown yang menangani
+                  return;
+                }
+                // Navigasi Left/Right untuk pindah antar segment tanggal (tahun/bulan/hari)
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                  // Jika cursor di awal/akhir input, biarkan handleFormKeyDown yang handle pindah field
+                  const input = e.target as HTMLInputElement;
+                  const cursorPosition = input.selectionStart || 0;
+                  const inputLength = input.value.length;
+                  
+                  if ((e.key === 'ArrowLeft' && cursorPosition === 0) || 
+                      (e.key === 'ArrowRight' && cursorPosition === inputLength)) {
+                    // Biarkan handleFormKeyDown yang menangani pindah field
+                    return;
+                  }
+                  // Jika di tengah-tengah input, biarkan default behavior untuk navigasi dalam tanggal
+                }
+              }}
+              placeholder="Masukkan tanggal lahir"
+              autoComplete="off"
+              className={`w-full border-2 border-black rounded px-2 py-1 shadow-md ${isDisabled ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+              disabled={isDisabled}
+            />
+          </div>
+        </div>
+      </div>
+  </form>
+  );
+}

@@ -1,0 +1,35 @@
+=== Mulai Pengujian Critical-Path API Nasabah ===
+
+Request: GET http://localhost:5000/api/nasabah
+Response: Array of length 76
+----------------------------------------
+
+Request: POST http://localhost:5000/api/nasabah
+Body: {"id":"critical123","name":"Nasabah Critical Test"}
+Response:
+{
+    "id":  "critical123",
+    "name":  "Nasabah Critical Test"
+}
+----------------------------------------
+
+Request: PUT http://localhost:5000/api/nasabah/critical123
+Body: {"name":"Nasabah Critical Test Diperbarui"}
+Response:
+{
+    "id":  "critical123",
+    "name":  "Nasabah Critical Test Diperbarui"
+}
+----------------------------------------
+
+Request: POST http://localhost:5000/api/nasabah/bulk-delete
+Body: {"ids":["critical123"]}
+Response:
+{
+    "message":  "Nasabah deleted",
+    "deletedCount":  1
+}
+----------------------------------------
+
+=== Selesai Pengujian Critical-Path API Nasabah ===
+

@@ -1,0 +1,327 @@
+[
+  {
+    "name": "OMAR HAMZY",
+    "address": "KEDATON PLERETE BANTUL YOGYAKATA ",
+    "phone": "-",
+    "job": "TOURIST",
+    "idNumber": "DL AUS 2060510432",
+    "birthPlace": "AUSTRALIA ",
+    "birthDate": "1985-03-04",
+    "image": "/uploads/OMAR_HAMZY.png",
+    "images": [
+      "/uploads/OMAR_HAMZY.png"
+    ],
+    "transactionType": "BNB",
+    "id": 1751948670740,
+    "transactionNumber": "000000031",
+    "date": "2025-07-08T04:24:30.740Z"
+  },
+  {
+    "name": "AMELIA FADIA HAYA ",
+    "address": "TEGAL MALANG 002/018 PURWOREJO ",
+    "phone": "0881011411726",
+    "job": "MAHASISWA ",
+    "idNumber": "KTP 3306064204000004",
+    "birthPlace": "PURWOREJO ",
+    "birthDate": "2000-04-02",
+    "image": "/uploads/AMELIA_FADIA_HAYA_.png",
+    "images": [
+      "/uploads/AMELIA_FADIA_HAYA_.png"
+    ],
+    "transactionType": "BNS",
+    "id": 1751949138468,
+    "transactionNumber": "000000032",
+    "date": "2025-07-08T04:32:18.468Z"
+  },
+  {
+    "name": "NATANAEL YONATHAN ",
+    "address": "JL MOH YUNUS I NO 9 005 / 007 CICENDO BANDUNG ",
+    "phone": "08111255025",
+    "job": "SWASTA ",
+    "idNumber": "SIM C 13058303002260",
+    "birthPlace": "SUBANG",
+    "birthDate": "1983-03-15",
+    "image": "/uploads/NATANAEL_YONATHAN_.png",
+    "images": [
+      "/uploads/NATANAEL_YONATHAN_.png"
+    ],
+    "transactionType": "BNB",
+    "id": 1751950077819,
+    "transactionNumber": "000000033",
+    "date": "2025-07-08T04:47:57.819Z"
+  },
+  {
+    "name": "HARIYANTO",
+    "address": "KARANGLOR 003/013 BEJIHARJO KARANGMOJO GUNUNG KIDUL",
+    "phone": "08562665270",
+    "job": "SWASTA ",
+    "idNumber": "KTP 3403092512850002",
+    "birthPlace": "GUNUNG KIDUL ",
+    "birthDate": "1985-12-25",
+    "image": "/uploads/HARIYANTO_3.png",
+    "images": [
+      "/uploads/HARIYANTO_3.png"
+    ],
+    "transactionType": "BNB",
+    "id": 1751951024084,
+    "transactionNumber": "000000034",
+    "date": "2025-07-08T05:03:44.084Z"
+  },
+  {
+    "name": "SRI WULANSARI ",
+    "address": "KEBONAN 002/003 NGAWEN KLATEN ",
+    "phone": "085600388853",
+    "job": "SWASTA ",
+    "idNumber": "KTP 3310224210880002",
+    "birthPlace": "KLATEN ",
+    "birthDate": "1998-10-02",
+    "image": "/uploads/SRI_WULANSARI_.png",
+    "images": [
+      "/uploads/SRI_WULANSARI_.png"
+    ],
+    "transactionType": "BNB",
+    "id": 1751951232844,
+    "transactionNumber": "000000035",
+    "date": "2025-07-08T05:07:12.844Z"
+  },
+  {
+    "name": "ARINA YULI WIDYASTUTI",
+    "address": "NGADINEGARAN MJ 3/100 015/004 MANTRIJERON YOGYAKARTA ",
+    "phone": "0817892234",
+    "job": "SWASTA ",
+    "idNumber": "KTP 3172065007760001",
+    "birthPlace": "BANTUL ",
+    "birthDate": "1976-07-10",
+    "image": "/uploads/ARINA_YULI_WIDYASTUTI_1.png",
+    "images": [
+      "/uploads/ARINA_YULI_WIDYASTUTI_1.png"
+    ],
+    "transactionType": "BNS",
+    "id": 1751952236484,
+    "transactionNumber": "000000036",
+    "date": "2025-07-08T05:23:56.484Z"
+  },
+  {
+    "name": "WAWANG PRASTYO WIBISONO",
+    "address": "PERUMNAS CC GEMPOL 013/013 CONDONG CATUR DEPOK SLEMAN ",
+    "phone": "08567677887",
+    "job": "SWASTA ",
+    "idNumber": "KTP 3404070305860005",
+    "birthPlace": "YOGYAKARTA ",
+    "birthDate": "1986-05-03",
+    "image": "/uploads/WAWANG_PRASTYO_WIBISONO.png",
+    "images": [
+      "/uploads/WAWANG_PRASTYO_WIBISONO.png"
+    ],
+    "transactionType": "BNB",
+    "id": 1751953183220,
+    "transactionNumber": "000000037",
+    "date": "2025-07-08T05:39:43.220Z"
+  },
+  {
+    "name": "ROHDI RENANTA ZULHAN ",
+    "address": "JL P DIPONEGORO 25 001/002 PACITAN ",
+    "phone": "08113128899",
+    "job": "SWASTA ",
+    "idNumber": "KTP 3501042703840004",
+    "birthPlace": "PACITAN ",
+    "birthDate": "1984-03-27",
+    "image": "/uploads/ROHDI_RENANTA_ZULHAN_.png",
+    "images": [
+      "/uploads/ROHDI_RENANTA_ZULHAN_.png"
+    ],
+    "transactionType": "BNS",
+    "id": 1751953460004,
+    "transactionNumber": "000000038",
+    "date": "2025-07-08T05:44:20.004Z"
+  },
+  {
+    "name": "YVONE L BOKINGS",
+    "address": "PUCANG JAJAR UTARA 30 002/001 KERTAJAYA GUBENG SURABAYA ",
+    "phone": "082132287321",
+    "job": "IRT",
+    "idNumber": "KTP 3578085210680001",
+    "birthPlace": "SURABAYA",
+    "birthDate": "1968-10-12",
+    "image": "/uploads/YVONE_L_BOKINGS.png",
+    "images": [
+      "/uploads/YVONE_L_BOKINGS.png"
+    ],
+    "transactionType": "BNB",
+    "id": 1751953905420,
+    "transactionNumber": "000000039",
+    "date": "2025-07-08T05:51:45.420Z"
+  },
+  {
+    "name": "AL RAHAYU ",
+    "address": "KUTU ASEM SINDUADI MLATI SLEMAN ",
+    "phone": "088806455521",
+    "job": "SWASTA ",
+    "idNumber": "SIM A 14529111000424",
+    "birthPlace": "MAGELANG ",
+    "birthDate": "1991-11-13",
+    "image": "/uploads/AL_RAHAYU_.png",
+    "images": [
+      "/uploads/AL_RAHAYU_.png"
+    ],
+    "transactionType": "BNB",
+    "id": 1751956622380,
+    "transactionNumber": "000000040",
+    "date": "2025-07-08T06:37:02.380Z"
+  },
+  {
+    "name": "NABILA AZ ZAHRA PUTRI ANWAR ",
+    "address": "JL BALIREJO NO 5 023/007 MUJA MUJU UH YK ",
+    "phone": "085540615952",
+    "job": "SWASTA ",
+    "idNumber": "KTP 3471135404080002",
+    "birthPlace": "YOGYAKARTA ",
+    "birthDate": "2008-04-14",
+    "image": "/uploads/NABILA_AZ_ZAHRA_PUTRI_ANWAR_.png",
+    "images": [
+      "/uploads/NABILA_AZ_ZAHRA_PUTRI_ANWAR_.png"
+    ],
+    "transactionType": "BNB",
+    "id": 1751962365794,
+    "transactionNumber": "000000043",
+    "date": "2025-07-08T08:12:45.794Z"
+  },
+  {
+    "name": "LAY LIN LIN",
+    "address": "KENANGA 007/003 PAAL NANGA PINOH MELAWI KALBAR",
+    "phone": "082250848897",
+    "job": "MAHASISWA ",
+    "idNumber": "KTP 6110025703030003",
+    "birthPlace": "NANGA PINOH ",
+    "birthDate": "2003-03-17",
+    "image": "/uploads/LAY_LIN_LIN.png",
+    "images": [
+      "/uploads/LAY_LIN_LIN.png"
+    ],
+    "transactionType": "BNB",
+    "id": 1751962748131,
+    "transactionNumber": "000000044",
+    "date": "2025-07-08T08:19:08.131Z"
+  },
+  {
+    "name": "RIDVAN OZEFE ",
+    "address": "STUDENT PARK APARTEMENT",
+    "phone": "-",
+    "job": "TOURIST",
+    "idNumber": "PS TUR U29356320",
+    "birthPlace": "OZALP",
+    "birthDate": "2002-04-21",
+    "image": "/uploads/RIDVAN_OZEFE_.png",
+    "images": [
+      "/uploads/RIDVAN_OZEFE_.png"
+    ],
+    "transactionType": "BNB",
+    "id": 1751963275911,
+    "transactionNumber": "000000045",
+    "date": "2025-07-08T08:27:55.911Z"
+  },
+  {
+    "name": "LAKSMI ENDRATI",
+    "address": "GAMPING KIDUL 002/016 AMBARKETAWANG GAMPING SLEMAN ",
+    "phone": "081212729962",
+    "job": "SWASTA ",
+    "idNumber": "KTP 3404016307870001",
+    "birthPlace": "SLEMAN ",
+    "birthDate": "1987-07-23",
+    "image": "/uploads/LAKSMI_ENDRATI.png",
+    "images": [
+      "/uploads/LAKSMI_ENDRATI.png"
+    ],
+    "transactionType": "BNS",
+    "id": 1751964479764,
+    "transactionNumber": "000000046",
+    "date": "2025-07-08T08:47:59.764Z"
+  },
+  {
+    "name": "ERRIC RISKY CAHYADI ",
+    "address": "JL DEWI SARTIKA NO 40 001/002 KLATEN TENGAH KLATEN ",
+    "phone": "082137750070",
+    "job": "SWASTA ",
+    "idNumber": "KTP 3310241301900001",
+    "birthPlace": "SINGARAJA 13-01-1990",
+    "birthDate": "1990-01-13",
+    "image": "/uploads/ERRIC_RISKY_CAHYADI_.png",
+    "images": [
+      "/uploads/ERRIC_RISKY_CAHYADI_.png"
+    ],
+    "transactionType": "BNB",
+    "id": 1751965425780,
+    "transactionNumber": "000000048",
+    "date": "2025-07-08T09:03:45.780Z"
+  },
+  {
+    "name": "IGNATIUS ADI PERDANA S ",
+    "address": "MOJOROTO IV/33 26/08 KEDIRI ",
+    "phone": "085800569581",
+    "job": "SWASTA ",
+    "idNumber": "KTP 3571001910950002",
+    "birthPlace": "KEDIRI ",
+    "birthDate": "1995-10-19",
+    "image": "/uploads/IGNATIUS_ADI_PERDANA_S_.png",
+    "images": [
+      "/uploads/IGNATIUS_ADI_PERDANA_S_.png"
+    ],
+    "transactionType": "BNS",
+    "id": 1751966778363,
+    "transactionNumber": "000000050",
+    "date": "2025-07-08T09:26:18.363Z"
+  },
+  {
+    "name": "ADINDA PUJI RAHMAWATI",
+    "address": "JL SRIWIJAYA 028/003 LEMBAH KUAMANG PELEPAT ILIR BUNGO JAMBI",
+    "phone": "082269512126",
+    "job": "SWASTA ",
+    "idNumber": "KTP 1508097107030001",
+    "birthPlace": "LEMBANH KUAMANG ",
+    "birthDate": "2003-07-31",
+    "image": "/uploads/ADINDA_PUJI_RAHMAWATI.png",
+    "images": [
+      "/uploads/ADINDA_PUJI_RAHMAWATI.png"
+    ],
+    "transactionType": "BNB",
+    "id": 1751967221987,
+    "transactionNumber": "000000051",
+    "date": "2025-07-08T09:33:41.987Z"
+  },
+  {
+    "name": "IMAM SIBAWEH ",
+    "address": "NGEMPLAK BARU 004/001 GENTAN BAKI SUKOHARJO ",
+    "phone": "085727382120",
+    "job": "SWASTA ",
+    "idNumber": "KTP 3323150906820001",
+    "birthPlace": "TEMANGGUNG ",
+    "birthDate": "1982-06-09",
+    "image": "/uploads/IMAM_SIBAWEH_.png",
+    "images": [
+      "/uploads/IMAM_SIBAWEH_.png"
+    ],
+    "transactionType": "BNB",
+    "id": 1751968130356,
+    "transactionNumber": "000000052",
+    "date": "2025-07-08T09:48:50.356Z"
+  },
+  {
+    "transactionNumber": "000000001",
+    "image": "/uploads/PUJI_PURNAWAN_32.jpg",
+    "transactionType": "BNS",
+    "idNumber": "3401121406910001",
+    "id": 1751075893981,
+    "name": "PUJI PURNAWAN",
+    "date": "2025-06-28T01:58:13.981Z",
+    "job": "SWASTA",
+    "birthDate": "1991-06-14",
+    "images": [
+      "/uploads/PUJI_PURNAWAN_27.jpg",
+      "/uploads/PUJI_PURNAWAN_28.jpg",
+      "/uploads/PUJI_PURNAWAN_32.jpg"
+    ],
+    "phone": "085878813372",
+    "birthPlace": "JOGA",
+    "address": "VILLA BANGUNTAPAN 2 NO E5 SAMPANGAN WIROKERTEN BANGUNTAPAN BANTUL"
+  }
+]

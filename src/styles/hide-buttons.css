@@ -1,0 +1,17 @@
+/* Hide Choose File, Clear, Simpan Data, and Batal buttons on transaksi and nasabah pages */
+
+/* Assuming body has data-page attribute or class indicating current page */
+/* Adjust selectors as per your app's actual page identification */
+
+/* Example using body class */
+body.page-transaksi label[for="file-upload"],
+body.page-transaksi button.variant-destructive,
+body.page-transaksi div.flex.gap-2.mb-4 {
+  display: none !important;
+}
+
+body.page-nasabah label[for="file-upload"],
+body.page-nasabah button.variant-destructive,
+body.page-nasabah div.flex.gap-2.mb-4 {
+  display: none !important;
+}

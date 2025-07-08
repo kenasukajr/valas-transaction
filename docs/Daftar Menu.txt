@@ -1,0 +1,4 @@
+UserForm : Form kiri (Utama)
+UserFormRight : Form gambar di kanan beserta tombol simpan dan hapus (Utama)
+UserFormNasabah : Form kiri untuk menu ubah & detail (Nasabah)
+UserFormTransaksi : Form kiri untuk menu detail (Transaksi) 
