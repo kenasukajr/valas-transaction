@@ -1,18 +1,33 @@
-# 💱 Blackbox Valas App v1.4.2
+# 💱 Blackbox Valas App v1.4.3
 
-![Version](https://img.shields.io/badge/version-1.4.2-blue.svg)
+![Version](https://img.shields.io/badge/version-1.4.3-blue.svg)
 ![Status](https://img.shields.io/badge/status-production%20ready-green.svg)
 ![Network](https://img.shields.io/badge/network-LAN%20ready-orange.svg)
+![BNS](https://img.shields.io/badge/BNS%20Payment-integrated-success.svg)
 
-Aplikasi manajemen transaksi valuta asing (valas) yang komprehensif dengan sistem validasi kurs otomatis, manajemen data nasabah, dan akses jaringan penuh.
+Aplikasi manajemen transaksi valuta asing (valas) yang komprehensif dengan sistem validasi kurs otomatis, manajemen data nasabah, dan akses jaringan penuh. **Versi 1.4.3** menambahkan integrasi lengkap untuk BNS Payment Navigation.
 
-## 🎉 What's New in v1.4.2
+## 🎉 What's New in v1.4.3
 
-### ✅ **Production Ready**
-- **Fixed Loading Timeout**: Mengatasi masalah "Loading timeout" dengan Next.js proxy
-- **Full Network Access**: Dapat diakses dari semua komputer dalam jaringan LAN
-- **Modern Transaction Display**: Tampilan transaksi dengan card design yang modern
-- **Zero Timeout Issues**: Sistem fetch natural tanpa kompleksitas timeout artificial
+### ✅ **BNS Payment Integration - COMPLETE**
+- **Complete BNS Payment Workflow**: Navigasi pembayaran lengkap untuk transaksi BNS
+- **Payment Navigation**: Down arrow → Enter → Payment input → Enter 3x → Reset R
+- **Enhanced AHK Generator**: Mendukung data pembayaran BNS (`pembayaranRp`)
+- **Payment Calculation**: Fallback otomatis dari data transaksi jika payment tidak disediakan
+- **BNS vs BNB Differentiation**: Workflow terpisah untuk jenis transaksi berbeda
+
+### 🔧 **Technical Improvements**
+- **Fixed BNS Navigation**: Correct Enter press count after rate input
+- **Conditional Navigation**: Different timing for BNS vs BNB transactions
+- **Enhanced Error Handling**: Comprehensive validation for BNS payment scenarios
+- **Production Ready**: All tests pass for deployment to PT Mulia Bumi Arta
+
+### 🚀 **BNS Payment Workflow**
+1. **Transaction Input**: Standard currency, amount, rate input
+2. **Navigation to Payment**: Automatic navigation to payment field
+3. **Payment Input**: Auto-calculated or manual payment value
+4. **Completion**: Enter 3x → 1 second delay → Reset with R
+5. **Return to Main Menu**: Ready for next transaction
 
 ### 🌐 **Network Configuration**
 - **Frontend**: `http://192.168.1.6:8000` 
