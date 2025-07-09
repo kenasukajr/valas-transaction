@@ -86,7 +86,7 @@ function generateAhkScript(data: any): string {
   ahkLines.push('')
   
   // Helper function untuk mengisi satu baris transaksi
-  const fillTransactionRow = (transactionData: any, rowNumber: number) => {
+  const fillTransactionRow = (transactionData: any, rowNumber: number, isLastTransaction: boolean = false) => {
     const currency = (transactionData.currency || '').toUpperCase().trim()
     
     // Konversi currency ke code number berdasarkan daftarValas
@@ -146,14 +146,52 @@ function generateAhkScript(data: any): string {
     ahkLines.push(`TypeString("${String(transactionData.rate || '')}")`)
     ahkLines.push('Sleep, 100')
     ahkLines.push('')
-    ahkLines.push('; Setelah input rate: Enter 3x')
-    ahkLines.push('Send, {Enter}')
-    ahkLines.push('Sleep, 100')
-    ahkLines.push('Send, {Enter}')
-    ahkLines.push('Sleep, 100')
-    ahkLines.push('Send, {Enter}')
-    ahkLines.push('Sleep, 200')
-    ahkLines.push('')
+    
+    // Logika berbeda untuk BNB berdasarkan apakah ini transaksi terakhir
+    if (currentTransactionType === 'BNB') {
+      if (isLastTransaction) {
+        ahkLines.push(`; Setelah input rate - transaksi terakhir BNB: Enter 2x → Down 1x → Enter 1x → 1s delay → Reset R`)
+        ahkLines.push('Send, {Enter}')
+        ahkLines.push('Sleep, 200')
+        ahkLines.push('Send, {Enter}')
+        ahkLines.push('Sleep, 200')
+        ahkLines.push('')
+        ahkLines.push('; Tekan panah ke bawah 1x untuk navigasi selanjutnya')
+        ahkLines.push('Send, {Down}')
+        ahkLines.push('Sleep, 300')
+        ahkLines.push('')
+        ahkLines.push('; Tekan Enter 1x setelah panah bawah')
+        ahkLines.push('Send, {Enter}')
+        ahkLines.push('Sleep, 300')
+        ahkLines.push('')
+        ahkLines.push('; Jeda 1 detik sebelum reset')
+        ahkLines.push('Sleep, 1000')
+        ahkLines.push('')
+        ahkLines.push('; Tekan tombol R 1x untuk reset ke menu utama')
+        ahkLines.push('Send, r')
+        ahkLines.push('Sleep, 500')
+        ahkLines.push('')
+      } else {
+        ahkLines.push(`; Setelah input rate - masih ada transaksi lain BNB: Enter 3x`)
+        ahkLines.push('Send, {Enter}')
+        ahkLines.push('Sleep, 100')
+        ahkLines.push('Send, {Enter}')
+        ahkLines.push('Sleep, 100')
+        ahkLines.push('Send, {Enter}')
+        ahkLines.push('Sleep, 200')
+        ahkLines.push('')
+      }
+    } else {
+      // Untuk BNS, tetap menggunakan logic yang sudah ada
+      ahkLines.push('; Setelah input rate: Enter 3x')
+      ahkLines.push('Send, {Enter}')
+      ahkLines.push('Sleep, 100')
+      ahkLines.push('Send, {Enter}')
+      ahkLines.push('Sleep, 100')
+      ahkLines.push('Send, {Enter}')
+      ahkLines.push('Sleep, 200')
+      ahkLines.push('')
+    }
   }
 
   // Isi data transaksi (mendukung multiple transactions)
@@ -196,7 +234,8 @@ function generateAhkScript(data: any): string {
     
     // Proses setiap transaksi
     transactions.forEach((transaction, index) => {
-      fillTransactionRow(transaction, index + 1)
+      const isLastTransaction = (index === transactions.length - 1)
+      fillTransactionRow(transaction, index + 1, isLastTransaction)
       
       // Jika bukan transaksi terakhir, navigasi ke baris berikutnya
       if (index < transactions.length - 1) {
@@ -233,11 +272,11 @@ function generateAhkScript(data: any): string {
           ahkLines.push('')
         } else {
           ahkLines.push(`; === NAVIGASI KE BARIS TRANSAKSI ${nextTransactionNumber} (NORMAL) ===`)
-          ahkLines.push('; Masih ada transaksi lain - Enter 1x lalu ketik code currency')
           
           // Conditional navigation berdasarkan jenis transaksi
           if (transactionType === 'BNS') {
             ahkLines.push('; BNS navigation: timing khusus untuk stabilitas')
+            ahkLines.push('; Masih ada transaksi lain - Enter 1x lalu ketik code currency')
             ahkLines.push('Send, {Enter}')
             ahkLines.push('Sleep, 500')  // Increase dari 200 ke 500 untuk BNS
             ahkLines.push('; Pastikan window masih aktif sebelum input currency')
@@ -245,8 +284,9 @@ function generateAhkScript(data: any): string {
             ahkLines.push('Sleep, 200')
             ahkLines.push('')
           } else {
-            ahkLines.push('; BNB navigation: timing normal')
-            ahkLines.push('Send, {Enter}')
+            ahkLines.push('; BNB navigation: tidak perlu Enter tambahan')
+            ahkLines.push('; Enter 3x sudah dilakukan di dalam fillTransactionRow')
+            ahkLines.push('; Langsung lanjut ke input transaksi selanjutnya')
             ahkLines.push('Sleep, 200')
             ahkLines.push('')
           }
@@ -259,18 +299,14 @@ function generateAhkScript(data: any): string {
     ahkLines.push('')
     
     // Untuk BNS, tidak perlu Enter lagi setelah transaksi selesai
-    if (transactionType !== 'BNS') {
-      ahkLines.push('; Enter 1x untuk mengakhiri input transaksi (hanya untuk BNB)')
-      ahkLines.push('Send, {Enter}')
-      ahkLines.push('Sleep, 300')
-    }
+    // Untuk BNB, navigasi terakhir sudah ditangani dalam fillTransactionRow
   } else {
     ahkLines.push('; Tidak ada data transaksi - hanya mengisi data nasabah')
     ahkLines.push('Sleep, 300')
   }
   
-  ahkLines.push('; === SELESAI TRANSAKSI - BERBEDA UNTUK BNB DAN BNS ===')
-  if (transactionType === 'BNS') {
+  // Untuk BNS, tambahkan navigasi pembayaran setelah semua transaksi selesai
+  if (transactionType === 'BNS' && transactions.length > 0) {
     ahkLines.push('; === SELESAI TRANSAKSI BNS ===')
     ahkLines.push('; Setelah transaksi selesai: navigasi ke pembayaran')
     ahkLines.push('')
@@ -320,24 +356,6 @@ function generateAhkScript(data: any): string {
     ahkLines.push('Sleep, 1000')
     ahkLines.push('')
     ahkLines.push('; Tekan tombol R 1x untuk reset ke menu utama')
-    ahkLines.push('Send, r')
-    ahkLines.push('Sleep, 500')
-    ahkLines.push('')
-  } else {
-    ahkLines.push('; === SELESAI TRANSAKSI BNB ===')
-    ahkLines.push('; Setelah transaksi BNB selesai dan tidak ada data yang diinput lagi')
-    ahkLines.push('; Tekan panah ke bawah 1x untuk navigasi selanjutnya')
-    ahkLines.push('Send, {Down}')
-    ahkLines.push('Sleep, 500')
-    ahkLines.push('')
-    ahkLines.push('; Tekan Enter 1x setelah panah bawah')
-    ahkLines.push('Send, {Enter}')
-    ahkLines.push('Sleep, 500')
-    ahkLines.push('')
-    ahkLines.push('; Jeda 1 detik sebelum reset')
-    ahkLines.push('Sleep, 1000')
-    ahkLines.push('')
-    ahkLines.push('; Tekan tombol R 1x untuk reset')
     ahkLines.push('Send, r')
     ahkLines.push('Sleep, 500')
     ahkLines.push('')
