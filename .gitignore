@@ -147,10 +147,10 @@ backend/service-account-key.json
 tools/backend/service-account-key.json
 backend/service-account.json
 tools/backend/service-account.json
-backend/nasabah.json
-tools/backend/nasabah.json
-backend/transactions.json
-tools/backend/transactions.json
+# backend/nasabah.json - ENABLED: File data nasabah perlu di-push ke GitHub
+# tools/backend/nasabah.json
+# backend/transactions.json - ENABLED: File data transaksi perlu di-push ke GitHub  
+# tools/backend/transactions.json
 backend/nasabah.json.backup.*
 tools/backend/nasabah.json.backup.*
 data/*.json

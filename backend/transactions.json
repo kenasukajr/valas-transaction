@@ -1,0 +1,29 @@
+[
+  {
+    "name": "THARIQ HANIF FAKHRUDDIN ",
+    "address": "KARANGSARI 001/031 WEDOMARTANI NGEMPLAK SLEMAN ",
+    "phone": "081215001643",
+    "job": "MAHASISWA ",
+    "idNumber": "KTP 3404113101010001",
+    "birthPlace": "MALANG ",
+    "birthDate": "2001-01-31",
+    "image": "/uploads/THARIQ HANIF FAKHRUDDIN.png",
+    "images": [
+      "/uploads/THARIQ HANIF FAKHRUDDIN.png"
+    ],
+    "transactionType": "BNB",
+    "id": 1752124741512,
+    "transactionNumber": "000000001",
+    "date": "2025-07-10T05:18:55.601Z",
+    "jenisTransaksi": "BNB",
+    "currency": "SGD",
+    "amount": 50,
+    "rate": 12600,
+    "rupiahEquivalent": 630000,
+    "totalRupiah": 630000,
+    "pembayaranRp": null,
+    "kembalianRp": null,
+    "transactionOrder": 1,
+    "totalTransactions": 1
+  }
+]
