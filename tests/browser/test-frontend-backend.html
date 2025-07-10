@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Frontend-Backend Connection</title>
+</head>
+<body>
+    <h1>Test Frontend-Backend Connection</h1>
+    <button onclick="testGenerateAhk()">Test Generate AHK</button>
+    <button onclick="testExecuteAhk()">Test Execute AHK</button>
+    <div id="result"></div>
+
+    <script>
+        async function testGenerateAhk() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing generate AHK...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/generate-ahk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: 'Test User',
+                        address: 'Test Address',
+                        phone: '123456789',
+                        job: 'Test Job',
+                        idNumber: '123456789',
+                        birthPlace: 'Test Place',
+                        currency: 'USD',
+                        amount: 100,
+                        rate: 15000,
+                        transactionType: 'BNB'
+                    })
+                });
+                
+                if (response.ok) {
+                    result.innerHTML = '<span style="color: green;">✓ Generate AHK Success</span>';
+                } else {
+                    result.innerHTML = '<span style="color: red;">✗ Generate AHK Failed: ' + response.status + '</span>';
+                }
+            } catch (error) {
+                result.innerHTML = '<span style="color: red;">✗ Generate AHK Error: ' + error.message + '</span>';
+            }
+        }
+
+        async function testExecuteAhk() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing execute AHK...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/execute-ahk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: 'Test User',
+                        address: 'Test Address',
+                        phone: '123456789',
+                        job: 'Test Job',
+                        idNumber: '123456789',
+                        birthPlace: 'Test Place',
+                        currency: 'USD',
+                        amount: 100,
+                        rate: 15000,
+                        transactionType: 'BNB'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result.innerHTML = '<span style="color: green;">✓ Execute AHK Success: ' + JSON.stringify(data) + '</span>';
+                } else {
+                    result.innerHTML = '<span style="color: red;">✗ Execute AHK Failed: ' + response.status + '</span>';
+                }
+            } catch (error) {
+                result.innerHTML = '<span style="color: red;">✗ Execute AHK Error: ' + error.message + '</span>';
+            }
+        }
+    </script>
+</body>
+</html>

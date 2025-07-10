@@ -1,0 +1,172 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production builds
+.next/
+out/
+dist/
+build/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+frontend.log
+backend.log
+
+# Runtime data
+.npm
+.eslintcache
+
+# Visual Studio Code
+.vs/
+*.vsidx
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio temporary files
+*.tmp
+*.temp
+
+# VS Code specific
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/debug.json
+.vscode/extensions.json
+!.vscode/launch.json
+
+# Build output directories
+bin/
+obj/
+
+# Compiled files
+*.dll
+*.exe
+*.pdb
+
+# MSBuild temporary files
+*.cache
+*.baml
+*.g.cs
+*.g.i.cs
+
+# AutoHotkey temporary scripts
+temp/
+script_*.ahk
+
+# Backup files
+*.backup
+*.backup.*
+
+# OAuth and API credentials
+*oauth2*.js
+*oauth2*.json
+*service-account*.json
+*UPLOAD-OTOMATIS-GUIDE.md
+*client_secret*.json
+*credentials*.json
+
+# Sensitive config files
+.env.local
+.env.production
+
+# Optional npm cache directory
+.npm/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode/settings.json
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
+
+# Windows
+desktop.ini
+
+# Binary files
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Server uploads (keep some samples but ignore most)
+backend/uploads/*.jpg
+backend/uploads/*.png
+backend/uploads/*.gif
+!backend/uploads/image.jpg
+!backend/uploads/image_1.jpg
+!backend/uploads/image_2.jpg
+
+# Temporary files and sensitive data
+temp/
+backend/temp/
+tools/backend/temp/
+backend/uploads/
+tools/backend/uploads/
+backend/manual-upload/*.txt
+tools/backend/manual-upload/*.txt
+backend/oauth2-token.json
+tools/backend/oauth2-token.json
+backend/service-account-key.json
+tools/backend/service-account-key.json
+backend/service-account.json
+tools/backend/service-account.json
+backend/nasabah.json
+tools/backend/nasabah.json
+backend/transactions.json
+tools/backend/transactions.json
+backend/nasabah.json.backup.*
+tools/backend/nasabah.json.backup.*
+data/*.json
+
+# Test generated AHK files (keep only specific test files)
+debug-*.ahk
+test-ahkv2-*.ahk
+test-current-*.ahk
+test-clean-*.ahk
+test-runtime-*.ahk
+test-output-*.ahk
+test-script-*.ahk
+test-integrasi-*.ahk
+test-multiple-transactions-*.ahk
+tests-archive/ahk-tests/*.ahk
+tests-archive/demo/*.ahk
+!test-bnb-navigation-fixed.ahk
+!test-bns-navigation-fixed.ahk
+!test-no-filedelete.ahk

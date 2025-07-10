@@ -1,0 +1,51 @@
+Versi 0.1 
+1.Form gambar di halaman nasabah dan transaksi sudah menggunakan modul lain, tidak terhubung ke UserFormRight di halaman Utama
+
+Versi 0.2
+1. Mengatur posisi modul di halaman nasabah dan transaksi agar lebih rapi
+2. Membuat menu password saat mau menghapus data di halaman nasabah atau transaksi
+3. Membuat inputan auto kapital dan membuat form jenis transaksi greyout
+
+Versi 0.3
+1. Mengatur urutan table di halaman nasabah dan transaksi sesuai dengan kebutuhan
+2. Membuat tombol kembali ada di kiri atas
+3. Membuat menu bulk delete di posisi kanan atas 
+
+Versi 0.4
+1. Mengatur ulang urutan UserForm halaman utama, no identitas di bawah pekerjaan  
+2. Mempertebal border untuk semua form
+3. Sekarang sudah bisa di akses dari perangkat lain
+4. Sudah ada program khusu menjalankan server
+5. Server sudah cepat, gambar sudah disimpan di folder terpisah
+6. Sudah ada aplikasi menjalankan server frontend dan backend
+
+Versi 0.5
+1. Membuat nama file gambar sesuai dengan nama inputan
+
+Versi 0.6
+1. Memperbaiki IP error saat ganti computer
+2. Server Manager sudah buisa memilih IP yg tepat secara manual
+
+Versi 0.7
+1. Memperbaiki inputan gambar agar tidak tertimpa gambar yg sama padahal data beda
+2. Memperbaiki nama sama tapi gambar beda, bisa muncul di sugest
+
+Versi 0.8
+1. Sudah bisa menambah gambar lebih dari 1 dan bisa melihat gambar lebih dari 1 di nasabah dan transaksi
+2. Bisa menghapus gambar di halaman nasabah 
+3. Saran data sudah diperbaiki dan ditingkatkan agar lebih baik dalam memberikan saran
+4. Saran gambar yg muncul sudah ditingkatkan menjadi lebih baik dalam memuncul kan gambar nasabah yg sesuai
+
+Versi 0.9
+1. Memulai memasukan form transaksi dan membuat halaman daftar valas
+2. Sudah membuat form transaksi, masih perlu perbaikan
+3. Menyesuaikan lebar form transaksi
+
+Versi 1.0
+1. Mengatur layout untuk table kurs dan no pelanggan
+2. Menyambungkan table kurs dengan web mbarate.net
+3. Memperbaiki bug dropdown menu sugest dan preview gambar
+
+Versi 1.1
+1. Menambah system Git (Check Point) 
+2. Memulai memasukan fungsi fungsi untuk transaksi

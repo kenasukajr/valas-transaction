@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Multiple Transactions</title>
+</head>
+<body>
+    <h1>Test Multiple Transactions Debug</h1>
+    
+    <h2>Test Data:</h2>
+    <div id="testData"></div>
+    
+    <h2>Actions:</h2>
+    <button onclick="testSingleTransaction()">Test Single Transaction</button>
+    <button onclick="testMultipleTransactions()">Test Multiple Transactions</button>
+    <button onclick="testMixedData()">Test Mixed Data</button>
+    
+    <h2>Result:</h2>
+    <div id="result"></div>
+
+    <script>
+        // Test data samples
+        const singleTransactionData = {
+            name: 'Test User Single',
+            address: 'Test Address',
+            phone: '123456789',
+            job: 'Test Job',
+            idNumber: '123456789',
+            birthPlace: 'Test Place',
+            currency: 'USD',
+            amount: 100,
+            rate: 15000,
+            transactionType: 'BNB'
+        };
+
+        const multipleTransactionsData = {
+            name: 'Test User Multiple',
+            address: 'Test Address',
+            phone: '123456789',
+            job: 'Test Job',
+            idNumber: '123456789',
+            birthPlace: 'Test Place',
+            transactionType: 'BNB',
+            transactions: [
+                { currency: 'USD', amount: 100, rate: 15000 },
+                { currency: 'EUR', amount: 50, rate: 17000 },
+                { currency: 'GBP', amount: 25, rate: 19000 }
+            ]
+        };
+
+        const mixedData = {
+            name: 'Test User Mixed',
+            address: 'Test Address',
+            phone: '123456789',
+            job: 'Test Job',
+            idNumber: '123456789',
+            birthPlace: 'Test Place',
+            // Main transaction data
+            currency: 'USD',
+            amount: 100,
+            rate: 15000,
+            transactionType: 'BNB',
+            // Array of transactions (should take priority)
+            transactions: [
+                { currency: 'EUR', amount: 75, rate: 17500 },
+                { currency: 'GBP', amount: 30, rate: 19500 }
+            ]
+        };
+
+        function displayTestData() {
+            document.getElementById('testData').innerHTML = `
+                <h3>Single Transaction:</h3>
+                <pre>${JSON.stringify(singleTransactionData, null, 2)}</pre>
+                
+                <h3>Multiple Transactions:</h3>
+                <pre>${JSON.stringify(multipleTransactionsData, null, 2)}</pre>
+                
+                <h3>Mixed Data:</h3>
+                <pre>${JSON.stringify(mixedData, null, 2)}</pre>
+            `;
+        }
+
+        async function testTransaction(data, testName) {
+            const result = document.getElementById('result');
+            result.innerHTML = `Testing ${testName}...`;
+            
+            try {
+                console.log(`Testing ${testName}:`, data);
+                
+                const response = await fetch('http://localhost:8000/api/generate-ahk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `test-${testName.replace(' ', '-')}.ahk`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    result.innerHTML = `<span style="color: green;">✓ ${testName} Success - File downloaded. Check console for debug logs.</span>`;
+                } else {
+                    result.innerHTML = `<span style="color: red;">✗ ${testName} Failed: ${response.status}</span>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<span style="color: red;">✗ ${testName} Error: ${error.message}</span>`;
+            }
+        }
+
+        function testSingleTransaction() {
+            testTransaction(singleTransactionData, 'Single Transaction');
+        }
+
+        function testMultipleTransactions() {
+            testTransaction(multipleTransactionsData, 'Multiple Transactions');
+        }
+
+        function testMixedData() {
+            testTransaction(mixedData, 'Mixed Data');
+        }
+
+        // Display test data on page load
+        displayTestData();
+    </script>
+</body>
+</html>

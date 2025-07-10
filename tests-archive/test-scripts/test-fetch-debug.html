@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Fetch API</title>
+    <script>
+        async function testFetch() {
+            const status = document.getElementById('status');
+            const results = document.getElementById('results');
+            
+            status.innerHTML = 'Testing...';
+            results.innerHTML = '';
+            
+            try {
+                console.log('🚀 Starting fetch test');
+                
+                // Test nasabah API
+                console.log('📡 Testing nasabah API...');
+                const nasabahUrl = 'http://localhost:5000/api/nasabah';
+                const nasabahResponse = await fetch(nasabahUrl, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                console.log('✅ Nasabah response:', nasabahResponse.status);
+                
+                if (!nasabahResponse.ok) {
+                    throw new Error(`Nasabah API failed: ${nasabahResponse.status}`);
+                }
+                
+                const nasabahData = await nasabahResponse.json();
+                console.log('📊 Nasabah data:', nasabahData.length, 'records');
+                
+                // Test transactions API
+                console.log('📡 Testing transactions API...');
+                const transactionsUrl = 'http://localhost:5000/api/transactions';
+                const transactionsResponse = await fetch(transactionsUrl, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                console.log('✅ Transactions response:', transactionsResponse.status);
+                
+                if (!transactionsResponse.ok) {
+                    throw new Error(`Transactions API failed: ${transactionsResponse.status}`);
+                }
+                
+                const transactionsData = await transactionsResponse.json();
+                console.log('📊 Transactions data:', transactionsData.length, 'records');
+                
+                status.innerHTML = 'SUCCESS!';
+                results.innerHTML = `
+                    <h3>Test Results:</h3>
+                    <p>✅ Nasabah API: ${nasabahResponse.status} - ${nasabahData.length} records</p>
+                    <p>✅ Transactions API: ${transactionsResponse.status} - ${transactionsData.length} records</p>
+                    <h4>Sample Nasabah:</h4>
+                    <pre>${JSON.stringify(nasabahData[0], null, 2)}</pre>
+                    <h4>Sample Transaction:</h4>
+                    <pre>${JSON.stringify(transactionsData[0], null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                console.error('❌ Fetch test failed:', error);
+                status.innerHTML = 'FAILED!';
+                results.innerHTML = `
+                    <h3>Error:</h3>
+                    <p style="color: red;">${error.message}</p>
+                    <p>Check console for more details.</p>
+                `;
+            }
+        }
+        
+        // Auto-run when page loads
+        window.onload = () => {
+            testFetch();
+        };
+    </script>
+</head>
+<body>
+    <h1>Debug Fetch API Test</h1>
+    <div id="status">Loading...</div>
+    <button onclick="testFetch()">Test Again</button>
+    <div id="results"></div>
+</body>
+</html>
